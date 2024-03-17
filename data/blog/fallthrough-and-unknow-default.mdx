@@ -1,0 +1,146 @@
+---
+title: Fallthrough and unknown default
+date: '2020-12-21'
+tags: ['swift']
+draft: false
+summary: 'In Swift, a switch statement concludes its execution once the first matching case is fulfilled, unlike in C and C++ where it continues to evaluate subsequent cases.'
+---
+Swift has many great features, people who worked with Objective-C for a long time will agree with this point I believe.
+
+One of them in Swift Control Flow is **Fallthrough**
+
+A switch statement in Swift completes its execution as soon as the first matching case is completed.
+
+It will not go up to the bottom of other cases as it happens in C and C++ programming languages.
+
+The generic syntax of a switch statement in C and C++ is as follows:
+
+```swift
+
+switch(expression) {
+case constant-expression:
+    statement(s);
+    break; // optional
+case constant-expression:
+    statement(s);
+    break; // optional
+    
+// you can have any number of case statement
+
+default: // Optional
+    statement(s);
+}
+
+```
+
+Here we need to use a **break** statement to come out of a case statement, otherwise, the execution control will fall through the subsequent case statements available below the matching case statement.
+
+The generic syntax of a switch statement in Swift is as follows:
+
+```swift
+
+switch expression {
+case expression1:
+    statement(s)
+    fallthrough // optional
+case expression2, expression3: // we can use , to use same implementation for more than one case
+    statement(s)
+    fallthrough // optional
+default: // optional
+    statement(s);
+}
+
+```
+
+If we do not use **fallthrough**, then the program will come out of the **switch** statement after executing the matching case.
+
+For example:
+
+```swift
+
+var integer = 3
+switch integer {
+case 4:
+    print("Four.")
+    fallthrough
+case 3:
+    print("Three.")
+    fallthrough
+case 2:
+    print("Two.")
+    fallthrough
+case 1:
+    print("One.")
+    fallthrough
+default:
+    print("Done.")
+}
+```
+
+In this example, `case 3:` matched with the integer value and will execute the corresponding statement. Since it has fallthrough in it. It will move to the next case and execute those statements too. Then the same rules applied if that statement also has fallthrough in it.
+
+The output looks like this:
+
+![Implementation example of fallthrough in Swift's Switch block](/images/articles/iOS/swift/003-fallthrough-and-unknown-default/fallthrough-playground.webp)
+<p class="imageCredits">fallthrough.playground</p>
+
+> The `fallthrough` keyword does not check the case conditions for the `switch` the case that it causes execution to fall into. The `fallthrough` keyword simply causes code execution to move directly to the statements inside the next case (or `default` case) block, as in C’s standard `switch` statement behaviour.
+
+Another feature I liked in the latest version of Swift is **@unknown default**
+
+When we use switch over an enum, we will need to do so exhaustively that means add a `switch` case for _every_ case in the enumeration, if not we need to add a default case
+
+![Implementation example of default case in Swift's Switch block](/images/articles/iOS/swift/003-fallthrough-and-unknown-default/switch-case-default.webp)
+<p class="imageCredits">Switch Default Case</p>
+
+Now if we need to add a case to an enum in the future, which is a code-breaking change for any `switch` that uses that enum.
+
+This is particularly cumbersome for code from libraries, SDKs and frameworks because every time when adding a new case to an enum it’s breaking someone else’s code. Moreover, a code-breaking change negatively affects that binary compatibility.
+
+To avoid all these issues, Swift 5.0 a new `@unknown` keyword can be added to the `default` switch case. This doesn’t change the behaviour of `default`, so this case will still match any cases that aren’t handled in the rest of the `switch` block.
+
+For example, we were switching between user notification authorization statuses. This would’ve worked fine in Swift 4.2, but now triggers a warning.
+
+```swift
+
+switch userNotificationsAuthorizationStatus {
+case .notDetermined:
+    requestPermission()
+case .authorized, .denied, .provisional:
+    // No need to request permission.
+    print("Didn't request permission for User Notifications")
+}
+
+```
+
+![Example of Error shown in Xcode because of unknown default case in Swift's Switch block](/images/articles/iOS/swift/003-fallthrough-and-unknown-default/unknown-default-switch-case-error.webp)
+<p class="imageCredits">Switch @unknown default Case</p>
+
+Therefore, we can use a combination of the `fallthrough` keyword together with the new `@unknown` keyword.
+
+```swift
+
+switch userNotificationsAuthorizationStatus {
+case .notDetermined:
+    requestPermission()
+case .authorized, .denied, .provisional:
+    fallthrough
+@unknown default:
+    // No need to request permission.
+    print("Didn't request permission for User Notifications")
+}
+```
+
+Let us understand the difference between `default` and `@unknown default`
+
+In the below code example, I didn’t cover the `authorized` enum case. Without `@unknown`, we’re not warned with any error and compiler just handles the case as a **catch all**.
+
+With `@unknown`, we’re warned that we didn’t handle the `authorized` case:
+
+![Switch must be exhaustive Error in Xcode](/images/articles/iOS/swift/003-fallthrough-and-unknown-default/switch-must-be-exhaustive-error.webp)
+<p class="imageCredits">Error about the missing case when using @unknown default</p>
+
+With `default`, we’re not warned that we didn’t handle the `authorized` case, we might miss implementing a case & there is no compiler feedback about it:
+
+![Example of using default in switch block](/images/articles/iOS/swift/003-fallthrough-and-unknown-default/authorized-case.webp)
+<p class="imageCredits">No Error about the missing case when using default</p>

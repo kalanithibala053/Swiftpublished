@@ -1,0 +1,368 @@
+---
+title: Build a simple API search
+date: '2016-03-08'
+tags: ['uikit']
+draft: false
+summary: Example of a markdown file with code blocks and syntax highlighting
+---
+This article helps to design a UITableViewController with a [SearchBar](https://developer.apple.com/documentation/uikit/uisearchcontroller/1618657-searchbar) and populates results whenever we start typing and follows opening a SafariWebView on tapping on the search results.
+
+Also, it helps to understand how to use  [**Alamofire**](https://github.com/Alamofire/Alamofire) with [**SwiftyJSON**](https://github.com/SwiftyJSON/SwiftyJSON)  to hit an API and fetch some results, parse them, and show the results in an  [UITableViewController](https://developer.apple.com/documentation/uikit/uitableviewcontroller?changes=_6).
+
+## Create a new project in Xcode
+
+![Create a new project in Xcode](/images/articles/iOS/swift/009-build-a-simple-API-search/new-project-in-Xcode.jpg)
+
+## Integrate Pod
+### Setup `podfile`
+Go to the terminal and enter the project directory path and type `pod init`, this creates `podfile` in our directory and then open this `podfile` from the project directory and add following pods into it
+
+```ruby
+
+platform :ios, '9.0'
+
+target 'WikiSearch' do  
+  use_frameworks!
+  pod 'Alamofire', '~> 4.7'  
+  pod 'SwiftyJSON', '~> 4.0'
+end
+
+```
+
+### Install Pods
+then run `pod install` in the terminal, this helps us to install these dependencies and resulting in the creation `.xcworkspace` file, close the project and open the `WikiSearch.xcworkspace` file. If you are new to cocoapods, please have a look [here](https://www.raywenderlich.com/156971/cocoapods-tutorial-swift-getting-started)
+
+## Storyboard
+### Add a UITableViewController
+Let's add a UITableViewController with NavigationController in the `Main.storyboard`
+
+<video
+  poster="/images/articles/iOS/swift/009-build-a-simple-API-search/add-a-UITableViewController.jpg"
+  src="/images/articles/iOS/swift/009-build-a-simple-API-search/add-a-UITableViewController.mov"
+  style={{ width: '100%' }}
+  controls
+  loop
+  autoPlay
+  muted
+  playsInline
+></video>
+<p class="imageCredits">Adding a UITableViewController using Storyboard</p>
+
+### Add Views
+I am going to create an `ImageView`, `TitleLabel` and `DescriptionLabel`, so there will be three UIElements in the TableView cell.
+
+<video poster="/images/articles/iOS/swift/009-build-a-simple-API-search/adds-UIElements-in-TableView.jpg" src="/images/articles/iOS/swift/009-build-a-simple-API-search/adds-UIElements-in-TableView.mov"  style={{ width: '100%' }} controls loop autoplay muted playsinline></video>
+
+## Time to Code
+### Add a TableViewCell
+Add a new class `CustomTableViewCell` sub-classing UITableViewCell to the project and add the referencing layouts from the table view cell.
+
+```swift
+
+import UIKit
+
+class CustomTableViewCell: UITableViewCell {
+
+    @IBOutlet weak var wikiImageView: UIImageView!
+    
+    @IBOutlet weak var titleLabel: UILabel!
+    
+    @IBOutlet weak var descriptionLabel: UILabel!
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+    }
+
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+    }
+}
+
+```
+
+### Add an UISearchController
+Now, add a new class `SearchResultsTableViewController` sub-classing `UITableViewController` and create a `UISearchController` property in it.
+
+```swift
+
+private let searchController = UISearchController(searchResultsController: nil)
+
+```
+
+#### Customize UISearchController
+Let us customize this searchBar and background view for the tableview like below:
+
+```swift
+
+private func setupSearchBar() {  
+    searchController.searchBar.delegate = self  
+    searchController.dimsBackgroundDuringPresentation = false  
+    searchController.hidesNavigationBarDuringPresentation = false  
+    searchController.searchBar.placeholder = "Search any Topic"  
+    definesPresentationContext = true  
+    tableView.tableHeaderView = searchController.searchBar  
+}
+
+```
+
+and
+
+```swift
+
+private func setupTableViewBackgroundView() {  
+   let backgroundViewLabel = UILabel(frame: .zero)  
+   backgroundViewLabel.textColor = .darkGray  
+   backgroundViewLabel.numberOfLines = 0  
+   backgroundViewLabel.text =   
+          "Oops, /n No results to show! ..."  
+   tableView.backgroundView = backgroundViewLabel  
+}
+
+```
+
+add these methods into `viewDidLoad` of the controller.
+
+```swift
+
+override func viewDidLoad() {  
+    super.viewDidLoad()  
+    tableView.tableFooterView = UIView()  
+    setupTableViewBackgroundView()  
+    setupSearchBar()  
+}
+
+```
+
+An UIView is added as tableFooterView so that empty cells will not be visible.
+
+### Create APIFetcher
+Now let us create an APIFetcher as a helper to helps us to fetch content from the API whenever we type something in the search bar with two methods inside it.
+
+```swift
+
+func search(searchText: String, 
+            completionHandler: @escaping ([JSON]?, NetworkError) -> ()) {}
+func fetchImage(url: String, 
+                completionHandler: @escaping (UIImage?, NetworkError) -> ()) {}
+
+```
+
+The first method is used to hit the API with desired search text from the searchBar, the Second method is used to fetch an image from the URL received as a search result, the entire helper class will look like below:
+
+```swift
+
+import Foundation
+import SwiftyJSON
+import Alamofire
+
+enum NetworkError: Error {
+    case failure
+    case success
+}
+
+class APIRequestFetcher {
+    var searchResults = [JSON]()
+    
+    func search(searchText: String, completionHandler: @escaping ([JSON]?, NetworkError) -> ()) {
+        let urlToSearch = "https://en.wikipedia.org//w/api.php?action=query&format=json&prop=pageimages%7Cpageterms&generator=prefixsearch&redirects=1&formatversion=2&piprop=thumbnail&pithumbsize=50&pilimit=10&wbptterms=description&gpssearch=\(searchText)&gpslimit=10"
+        
+        Alamofire.request(urlToSearch).responseJSON { response in
+            guard let data = response.data else {
+                completionHandler(nil, .failure)
+                return
+            }
+            
+            let json = try? JSON(data: data)
+            let results = json?["query"]["pages"].arrayValue
+            guard let empty = results?.isEmpty, !empty else {
+                completionHandler(nil, .failure)
+                return
+            }
+            
+            completionHandler(results, .success)
+        }
+    }
+    
+    func fetchImage(url: String, completionHandler: @escaping (UIImage?, NetworkError) -> ()) {
+        Alamofire.request(url).responseData { responseData in
+            
+            guard let imageData = responseData.data else {
+                completionHandler(nil, .failure)
+                return
+            }
+            
+            guard let image = UIImage(data: imageData) else {
+                completionHandler(nil, .failure)
+                return
+            }
+            
+            completionHandler(image, .success)
+        }
+    }
+}
+
+```
+
+I have created an enumeration to pass the network status in the completion handler.
+
+The API used here to hit and get search results is [Wikipedia Media API](https://www.mediawiki.org/wiki/API:Main_page)
+
+Now let us make the controller ready for making this API to hit and show the results,
+
+```swift
+
+import UIKit
+import SwiftyJSON
+import Alamofire
+import SafariServices
+
+final class SearchResultsTableViewController: UITableViewController {
+    
+    private var searchResults = [JSON]() {
+        didSet {
+            tableView.reloadData()
+        }
+    }
+    
+    private let searchController = UISearchController(searchResultsController: nil)
+    private let apiFetcher = APIRequestFetcher()
+    private var previousRun = Date()
+    private let minInterval = 0.05
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        tableView.tableFooterView = UIView()
+        setupTableViewBackgroundView()
+        setupSearchBar()
+    }
+    
+    private func setupTableViewBackgroundView() {
+        let backgroundViewLabel = UILabel(frame: .zero)
+        backgroundViewLabel.textColor = .darkGray
+        backgroundViewLabel.numberOfLines = 0
+        backgroundViewLabel.text = " Oops, No results to show "
+        backgroundViewLabel.textAlignment = NSTextAlignment.center
+        backgroundViewLabel.font.withSize(20)
+        tableView.backgroundView = backgroundViewLabel
+    }
+
+    private func setupSearchBar() {
+        searchController.searchBar.delegate = self
+        searchController.dimsBackgroundDuringPresentation = false
+        searchController.hidesNavigationBarDuringPresentation = false
+        searchController.searchBar.placeholder = "Search any Topic"
+        definesPresentationContext = true
+        tableView.tableHeaderView = searchController.searchBar
+    }
+
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return searchResults.count
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell",
+                                                 for: indexPath) as! CustomTableViewCell
+        
+        cell.titleLabel.text = searchResults[indexPath.row]["title"].stringValue
+        
+        cell.descriptionLabel.text = searchResults[indexPath.row]["terms"]["description"][0].string
+        
+        if let url = searchResults[indexPath.row]["thumbnail"]["source"].string {
+            apiFetcher.fetchImage(url: url, completionHandler: { image, _ in
+                cell.wikiImageView.image = image
+            })
+        }
+        
+        return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        let title = searchResults[indexPath.row]["title"].stringValue
+        guard let url = URL.init(string: "https://en.wikipedia.org/wiki/\(title)")
+            else { return }
+        
+        let safariVC = SFSafariViewController(url: url)
+        present(safariVC, animated: true, completion: nil)
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+}
+
+extension SearchResultsTableViewController: UISearchBarDelegate {
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        searchResults.removeAll()
+        guard let textToSearch = searchBar.text, !textToSearch.isEmpty else {
+            return
+        }
+        
+        if Date().timeIntervalSince(previousRun) > minInterval {
+            previousRun = Date()
+            fetchResults(for: textToSearch)
+        }
+    }
+    
+    func fetchResults(for text: String) {
+        print("Text Searched: \(text)")
+        apiFetcher.search(searchText: text, completionHandler: {
+            [weak self] results, error in
+            if case .failure = error {
+                return
+            }
+            
+            guard let results = results, !results.isEmpty else {
+                return
+            }
+            
+            self?.searchResults = results
+        })
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchResults.removeAll()
+    }
+
+}
+
+```
+
+The `didSelectRow` method is configured with SafariServices, the idea is whenever we tap on a cell, it will open the respective Wikipedia page in the app itself.
+
+also, there is a delay added to hit the API after the user typed something on the searchBar to avoid multiple calls to the API unnecessarily
+
+Every result from the API will look like:
+
+```json
+
+{  
+  "index": 5,  
+  "ns": 0,  
+  "pageid": 1389932,  
+  "terms": {  
+    "description": [  
+      "Indian cricket player"  
+    ]  
+  },  
+  "thumbnail": {  
+    "height": 50,  
+    "source": "[https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Murali_kartik_bowling.jpg/25px-Murali_kartik_bowling.jpg](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Murali_kartik_bowling.jpg/25px-Murali_kartik_bowling.jpg)",  
+    "width": 25  
+  },  
+  "title": "Murali Kartik"  
+}
+
+```
+
+among all these, we gonna map the `title` to our title, `description` to our description and `thumbnail source` to our imageView
+
+That's IT, so when we run the app now, we could able to get results when we start typing in the searchBar
+
+<video poster="/images/articles/iOS/swift/009-build-a-simple-API-search/final-simulator-output.jpg" src="/images/articles/iOS/swift/009-build-a-simple-API-search/final-simulator-output.mp4" style={{ width: '48%' }} controls loop autoplay muted playsinline></video>
+<p class="imageCredits">Demo of a simple API Search on simulator</p>
+
+The entire project can be downloaded [here](https://github.com/kmuralidharan91/WikiSearch)

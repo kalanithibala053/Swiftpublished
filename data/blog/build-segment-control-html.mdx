@@ -1,0 +1,304 @@
+---
+title: Build a Segmented Control using HTML + CSS
+date: '2016-03-08'
+tags: ['html-and-css']
+draft: false
+summary: Example of a markdown file with code blocks and syntax highlighting
+---
+Segmented Control is quite popular in Mobile, this is how it looks in [iOS](https://developer.apple.com/design/human-interface-guidelines/segmented-controls) & [Android](https://m3.material.io/components/segmented-buttons/overview). Considering it’s popularity, there is a wide adoption in web as well.
+
+Today we will be building a segmented control to toggle colour schemes on our website, rather recreate the one found on the footer of [Apple Developer website](https://developer.apple.com).
+
+![Screenshot showing how Segmented Control looks in Apple Developer website (dark mode)](/images/articles/web/build-a-segmented-control-in-html-css/apple-developer-site-dark.jpg)
+<p class="imageCredits">Segmented Control in Apple Developer website (dark mode)</p>
+
+![Screenshot showing how Segmented Control looks in Apple Developer website (light mode)](/images/articles/web/build-a-segmented-control-in-html-css/apple-developer-site-light.jpg)
+<p class="imageCredits">Segmented Control in Apple Developer website (light mode)</p>
+
+## Choosing the right UI element
+
+I am writing this article as I am building it, so hopefully it will be simple to understand & will cover most of the grounds.
+
+From what we already know, the right UI for this component would be a `radio input` as we can select only one segment at a time. So, let’s try to add 3 radio inputs to an `index.html`
+
+```html
+
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+  <input id="light-color-scheme-radio" type="radio">
+  <label for="light-color-scheme-radio">Light</label>
+
+  <input id="dark-color-scheme-radio" type="radio">
+  <label for="dark-color-scheme-radio">Dark</label>
+
+  <input id="auto-color-scheme-radio" type="radio">
+  <label for="auto-color-scheme-radio">Auto</label>
+</body>
+
+</html>
+
+```
+<p class="imageCredits">index.html</p>
+
+### Output
+
+![Output 1](/images/articles/web/build-a-segmented-control-in-html-css/output1.jpg)
+
+## Styling Decisions
+
+Looks like the horizontal alignment is fine, we need to change few things:
+
+- hide the `radio` circle
+- change background & foreground colour of selected `input`
+
+### Hide the `radio` circle
+
+Let’s add an `index.css`, we would need to wrap the `radio` buttons on a `div`, then change the `display` property of `div.input`
+
+
+```html
+
+<head>
+  <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+  <div class="color-scheme-segment-control">
+    <input id="light-color-scheme-segment" type="radio">
+    <label for="light-color-scheme-segment">Light</label>
+
+    <input id="dark-color-scheme-segment" type="radio">
+    <label for="dark-color-scheme-segment">Dark</label>
+
+    <input id="auto-color-scheme-segment" type="radio">
+    <label for="auto-color-scheme-segment">Auto</label>
+  </div>
+</body>
+
+```
+<p class="imageCredits">index.html</p>
+
+```css
+
+.color-scheme-segment-control input {
+  display: none;
+}
+
+```
+<p class="imageCredits">index.css</p>
+
+#### Output
+
+![Output 2](/images/articles/web/build-a-segmented-control-in-html-css/output2.jpg)
+
+### Change background & foreground colour of selected `input`
+
+This is tricky, whenever a `radio input` is selected, we need to somehow change the style of its corresponding `label`
+
+From w3schools [CSS Selector Reference](https://www.w3schools.com/cssref/css_selectors.php), looks like `[element + element]` (as referenced [here](https://www.w3schools.com/cssref/sel_element_pluss.php)) might do the job, let’s try by setting first `input` as `checked`
+
+
+```html
+
+<div class="color-scheme-segment-control">
+    <input id="light-color-scheme-segment" type="radio" checked>
+		<label for="light-color-scheme-segment">Light</label>
+		...
+</div>
+
+```
+<p class="imageCredits">index.html</p>
+
+```css
+
+#light-color-scheme-segment:checked + label {
+  background-color: blue;
+}
+
+```
+<p class="imageCredits">index.css</p>
+
+### Output
+
+![Output 3](/images/articles/web/build-a-segmented-control-in-html-css/output3.jpg)
+
+okay, it works, but that means we have to duplicate the same style for other `input`s as well. Is there a way to combine the style for all the `input`s? May be if we gave them all the same `name` & somehow apply style to that `name` instead 🤔
+
+From w3schools [CSS Selector Reference](https://www.w3schools.com/cssref/css_selectors.php), looks like `[*attribute*~=*value*]` (as referenced [here](https://www.w3schools.com/cssref/sel_attribute_value_contains.php)) might do the job, let’s try (we need to check if it works upon selection & deselection also)
+
+
+```html
+
+<div class="color-scheme-segment-control">
+    <input id="light-color-scheme-segment" name="color-scheme-segment-input" type="radio" checked>
+    <label for="light-color-scheme-segment">Light</label>
+
+    <input id="dark-color-scheme-segment" name="color-scheme-segment-input" type="radio">
+    <label for="dark-color-scheme-segment">Dark</label>
+
+    <input id="auto-color-scheme-segment" name="color-scheme-segment-input" type="radio">
+    <label for="auto-color-scheme-segment">Auto</label>
+</div>
+
+```
+<p class="imageCredits">index.html</p>
+
+```css
+
+[name~="color-scheme-segment-input"]:checked + label {
+  background-color: blue;
+}
+
+```
+<p class="imageCredits">index.css</p>
+
+### Output
+
+<video 
+  src="/images/articles/web/build-a-segmented-control-in-html-css/output4-segment-control.mov" 
+  style={{width: '100%'}}  
+  controls 
+  loop 
+  autoplay 
+  muted 
+  playsinline
+></video>
+
+Awesome 🥳 it works, even on selection & deselection
+
+From here on, it should be easy for us to add other styles like foreground colour on selection.
+
+## Final Styling
+
+1. Outer `div` should place the `input`s & `label`s in centre
+
+```css
+
+.color-scheme-segment-control {
+  display: inline-flex;
+  justify-content: center;
+  align-content: center;
+}
+
+```
+<p class="imageCredits">index.css</p>
+
+2. Outer `div` should have some `padding`, `border` & capsule-button like look (we can achieve it by giving a really big corner radius)
+
+```css
+
+.color-scheme-segment-control {
+  padding: 1px;
+  border: solid 1px #306FDB;
+  /* To make it look like a capsule */
+  border-radius: 1000px;
+}
+
+```
+<p class="imageCredits">index.css</p>
+
+3. `label`s should have some padding (more on horizontal), default (unselected) foreground colour, reduced font size & capsule-button like look
+
+```css
+
+.color-scheme-segment-control label {
+  padding: 3px 8px;
+  color: #306FDB;
+  font-size: 0.75rem;
+  /* To make it look like a capsule */
+  border-radius: 1000px;
+}
+
+```
+<p class="imageCredits">index.css</p>
+
+4. `label`s should have a selected foreground & background colour
+
+```css
+
+[name~="color-scheme-segment-input"]:checked+label {
+  color: white;
+  background-color: #306FDB;
+}
+
+```
+<p class="imageCredits">index.css</p>
+
+That’s it, this is how our final code will looks like
+
+```html
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+  <h1>Segment Control Demo</h1>
+  <div class="color-scheme-segment-control">
+    <input id="light-color-scheme-segment" name="color-scheme-segment-input" type="radio" checked>
+    <label for="light-color-scheme-segment">Light</label>
+
+    <input id="dark-color-scheme-segment" name="color-scheme-segment-input" type="radio">
+    <label for="dark-color-scheme-segment">Dark</label>
+
+    <input id="auto-color-scheme-segment" name="color-scheme-segment-input" type="radio">
+    <label for="auto-color-scheme-segment">Auto</label>
+  </div>
+</body>
+
+</html>
+```
+<p class="imageCredits">index.html</p>
+
+```css
+
+.color-scheme-segment-control {
+  display: inline-flex;
+  justify-content: center;
+  align-content: center;
+  padding: 1px;
+  border: solid 1px #306FDB;
+  /* To make it look like a capsule */
+  border-radius: 1000px;
+}
+
+.color-scheme-segment-control input {
+  display: none;
+}
+
+.color-scheme-segment-control label {
+  padding: 3px 8px;
+  color: #306FDB;
+  font-size: 0.75rem;
+  /* To make it look like a capsule */
+  border-radius: 1000px;
+}
+
+[name~="color-scheme-segment-input"]:checked+label {
+  color: white;
+  background-color: #306FDB;
+}
+
+```
+<p class="imageCredits">index.css</p>
+
+## Demo
+
+Now, it looks pretty similar to Segmented Control on Apple Developer Website. Hooray 🥳 🥂
+
+<video 
+  src="/images/articles/web/build-a-segmented-control-in-html-css/segment-control-demo.mov" 
+  style={{width: '100%'}} 
+  controls 
+  loop 
+  autoPlay 
+  muted 
+  playsInline
+></video>
+
+

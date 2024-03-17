@@ -1,0 +1,198 @@
+---
+title: 'How To Simulate Location in Xcode and Simulator'
+date: '2023-08-05'
+lastmod: '2023-08-05'
+tags: ['map--location']
+draft: false
+summary: 'Release of Tailwind Nextjs Starter Blog template v2.0, refactored with Nextjs App directory and React Server Components setup.Discover the new features and how to migrate from V1.'
+images: ['/static/images/twitter-card.png']
+---
+When working on an app that requires it to point it to a specific location or simulate a custom location movement, it's tedious to set it up manually in a simulator or on iOS devices every time. We have a few ways to sort them quickly once so that you and your team can point to multiple locations after that.
+
+## Static Location Simulation
+
+When we want to point to a custom static location, we have two options:
+
+ - Default static location
+ - Custom static location
+
+### Default static location
+
+Xcode comes with a few default cities to help simulate locations. It can be done in three ways:
+
+#### By editing schemes
+
+Navigate to the Edit scheme by taping on the Product Menu and in the Run menu under the Options tab, as shown in the below screenshot:
+
+![Edit Scheme in Xcode](/images/articles/iOS/swift/004-simulate-location-in-xcode/edit-scheme.webp)
+
+![Options in Edit Scheme Under Run](/images/articles/iOS/swift/004-simulate-location-in-xcode/edit-scheme-options.webp)
+
+![Core Location inside Options in Edit Scheme Under Run](/images/articles/iOS/swift/004-simulate-location-in-xcode/edit-schemes-option-core-location.webp)
+
+Make sure the Allow location simulation is selected, and you can select a location from the given option to simulate the simulator/device to point to that location when the app is launched.
+
+#### From the menu bar
+
+Tap Debug from the Xcode menu bar and click simulate location. The same default locations options will be visible, as seen in the below screenshot:
+
+![Stimulate Location under Debug option in Xcode's Menu Bar](/images/articles/iOS/swift/004-simulate-location-in-xcode/debug-simulate-location.webp)
+
+#### From the bottom debug bar
+
+![Stimulate Location under Debug option in Xcode's bottom Bar](/images/articles/iOS/swift/004-simulate-location-in-xcode/bottom-debug-bar-custom-location.webp)
+
+<p class="important">Note</p>
+
+This option will be enabled when the app is enabled with location permission
+
+
+### Custom static location
+
+If we need to point our app to a particular location, for example, to point to my hometown, [Tiruchirappalli](https://goo.gl/maps/TqinzARhuNBWhjGH6) (which is not available as part of the default list), we need the coordinates.
+
+<p class="tip">Tip</p>
+
+Coordinates of any location can be easily taken by right-clicking on Google maps
+
+
+![Google's Maps showing Tiruchirappalli location](/images/articles/iOS/swift/004-simulate-location-in-xcode/google-maps-tiruchirappalli-pin.webp)
+
+Once we get them, Go to the Simulator menu, tap Features → Custom Location, and enter the coordinates. The app will not start pointing to the custom location now.
+
+![Custom Location inside Features in Stimulate Menu Bar](/images/articles/iOS/swift/004-simulate-location-in-xcode/simulator-custom-location.webp)
+
+![Simulator reacting to custom location input](/images/articles/iOS/swift/004-simulate-location-in-xcode/simulator-custom-location-gif.gif)
+
+#### Custom static location using GPX file
+
+To simulate a location, we can use a GPX file.
+
+> GPX, or GPS Exchange Format, is an [XML schema](https://en.wikipedia.org/wiki/XML_schema) designed as a common [GPS](https://en.wikipedia.org/wiki/GPS) data format for software applications. It can be used to describe [waypoints](https://en.wikipedia.org/wiki/Waypoint), [tracks](https://en.wikipedia.org/wiki/GPS_tracking), and routes.
+
+```xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" creator="Open GPX Tracker for iOS">
+	<wpt lat="10.770822704808955" lon="78.88960536898259">
+		<time>2022-12-04T19:13:26Z</time>
+		<name>7:13:26 PM</name>
+		<desc>04-Dec-2022 at 7:13:26 PM</desc>
+	</wpt>
+	<trk>
+	</trk>
+</gpx>
+
+```
+
+#### How to create a GPX file?
+
+Xcode File Menu → New → File (Ctrl+N), Navigate to Resource column, you can able to find the GPX File option, click Next, define a name, and you are done
+
+![Creating new gpx file under Xcode new file section](/images/articles/iOS/swift/004-simulate-location-in-xcode/create-new-gpx-file-in-xcode.webp)
+
+![Example of GPX File showing location of Apple Campus](/images/articles/iOS/swift/004-simulate-location-in-xcode/example-gpx-file.webp)
+<p class="imageCredits">The default GPX file is the location of Apple Campus.</p>
+
+<p class="tip">Tip</p>
+
+You can create a GPX file with only one waypoint (`<wpt>`) with a coordinate you want to simulate
+
+
+Once its done, select it under the edit scheme location selection as shown below:
+
+![Selection of GPX file under Core Location inside Options in Edit Scheme Under Run](/images/articles/iOS/swift/004-simulate-location-in-xcode/edit-scheme-location-selection.webp)
+
+<p class="tip">Tip</p>
+
+Here by default, Xcode created a waypoint with name and time, but those are not the mandatory properties.
+
+We can save any number of location points(coordinates) as GPX files and use them in Xcode.
+
+
+#### Dynamic (Multiple) Location Simulation
+
+If our app needs to simulate a location movement like needed in a fitness app or location tracking feature in the app, then just a single custom coordinate is not enough. In those cases, we can need to use multiple `<wpt>` tags in a GPX file!
+
+```xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" creator="Open GPX Tracker for iOS">
+	<wpt lat="10.79800206061308" lon="78.6870669099">
+		<time>2022-12-04T17:28:09Z</time>
+		<name>5:28:09 PM</name>
+		<desc>04-Dec-2022 at 5:28:09 PM</desc>
+	</wpt>
+	<wpt lat="10.813891267686442" lon="78.68684628670012">
+		<time>2022-12-04T17:28:15Z</time>
+		<name>5:28:15 PM</name>
+		<desc>04-Dec-2022 at 5:30:15 PM</desc>
+	</wpt>
+	<wpt lat="10.85973245384515" lon="78.6952043334087">
+		<time>2022-12-04T17:28:27Z</time>
+		<name>5:28:27 PM</name>
+		<desc>04-Dec-2022 at 5:32:27 PM</desc>
+	</wpt>
+	<wpt lat="10.910765553385477" lon="78.69941560728294">
+		<time>2022-12-04T17:28:32Z</time>
+		<name>5:28:32 PM</name>
+		<desc>04-Dec-2022 at 5:34:32 PM</desc>
+	</wpt>
+	<trk>
+	</trk>
+</gpx>
+
+```
+
+Time (`<time>`) tag is needed here to simulate realistic movement, and Xcode will interpolate movement at a rate of speed based on the time elapsed between each waypoint. If you do not provide a time element, Xcode will use a fixed rate of speed.
+
+
+The time taken from one point to the next is determined by the difference between the `<time>` elements
+
+Time taken to travel from P0 to P1 = (P1 Time) - (P0 Time)
+
+In the example above, the time for Point 1 is `2022–12–04T17:28:09Z` and for Point 2 is `2022–12–04T17:30:15Z`. It is a difference of two seconds. Xcode will use two seconds to go from Point 1 to Point 2. During this duration, the location will change, which means that if you implemented
+
+```swift
+
+func locationManager(
+    _ manager: CLLocationManager,   
+    didUpdateLocations locations: [CLLocation]
+)
+
+```
+
+you will receive the updates between the two seconds of Xcode simulating from Point 1 to Point 2.
+
+<p class="important">Important</p>
+
+Waypoints must be sorted by time in ascending order
+
+
+#### GPX tracker
+
+There are many tools available to generate a GPX file with our dedicated inputs, one of them is [GPXTracker](https://apps.apple.com/us/app/open-gpx-tracker/id984503772) an [opensource](https://github.com/merlos/iOS-Open-GPX-Tracker) tool that I use:
+
+Install the app and open it. Simply long-tap on the location points where you want, as shown below:
+
+![Create new gxp file using gpx tracker app](/images/articles/iOS/swift/004-simulate-location-in-xcode/create-new-gpx-file-using-gpx-tracker.gif)
+
+Once you place the points, you can tap on save from the bottom bar with desired name and drag and drop the saved one to Xcode.
+
+![New gpx filed added into xcode](/images/articles/iOS/swift/004-simulate-location-in-xcode/add-genrated-gpx-file-in-xcode-and-select-in-custom-location-option.gif)
+
+Xcode also comes with a few default dynamic location simulations (predefined moments), which you can use if they fit your app use case to debug:
+
+1. City Run
+2. City Bicycle Ride
+3. Freeway Drive
+
+These three options will simulate a movement for running, riding, and driving, varying by speed. This is great for quick debugging.
+
+![Default dynamic location simulations in simulator](/images/articles/iOS/swift/004-simulate-location-in-xcode/default-dynamic-location-simulations.webp)
+
+This is suitable for a quick test since you don’t have control over the movement route. To have better control, you have to simulate movement in Xcode with a GPX file.
+
+### Cons of location simulation
+
+These simulations are generally for testing/implementation purposes since they do not help in the actual movement speed and accuracy.

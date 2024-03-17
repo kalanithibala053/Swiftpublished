@@ -1,0 +1,47 @@
+---
+title: Swift Package Plugins - Getting Started
+date: '2020-12-21'
+tags: ['spm']
+draft: false
+summary: 'Let us deep dive understood the for-In, forEach, for-In-Enumerated in Swift and how it is different from other languages and why?'
+---
+## <p class="important">Disclaimer</p>
+
+This article doesn’t explain what is a Swift Package Plugin, but just provides Source Code of the demos discussed in the related WWDC videos.
+
+I hope you will have better resources to start diving into Swift Package Plugin, next time we will understand in detail what it is, how it works & where we can use it.
+
+## [Meet Swift Package plugins](https://developer.apple.com/videos/play/wwdc2022/110359/)
+
+In this WWDC video, [@Anders Bertelrud](https://github.com/abertelrud) walks us through the basics of Plugins. But, it doesn’t show the code as he used the remote Package dependencies.
+
+I tried to search for the packages used, had some luck to find related code examples from [@Anders Bertelrud](https://github.com/abertelrud)’s repos. Forked them to keep a record in case upstream is deleted.
+
+## <p class="important">Note</p>
+
+These repos are not updated & might not work. But, they might be a good starting point to learn about Plugin & what it can do.
+
+
+- [swiftpm-command-plugin-examples](https://github.com/shahrukhalam/swiftpm-command-plugin-examples)
+- [swiftpm-buildtool-plugin-examples](https://github.com/shahrukhalam/swiftpm-buildtool-plugin-examples)
+- [SourceCodeUtilityPlugins](https://github.com/shahrukhalam/SourceCodeUtilityPlugins)
+- [SwiftFormatPlugin](https://github.com/shahrukhalam/SwiftFormatPlugin)
+- [swift-protobuf-plugin-example](https://github.com/shahrukhalam/swift-protobuf-plugin-example)
+
+## [Create Swift Package plugins](https://developer.apple.com/videos/play/wwdc2022/110401)
+
+In this WWDC video, [@Boris Bugling](https://twitter.com/NeoNacho) actually creates the Plugins, you can find the snippets in the video link, but the complete code is not downloadable. So, I have created working swift packages for you.
+
+### Command Plugin
+
+[GenerateContributors](https://github.com/shahrukhalam/GenerateContributors)
+
+### Build Tools Plugin
+
+#### In-build Command
+
+[IconLibrary](https://github.com/shahrukhalam/IconLibrary)
+
+#### Pre-build Command
+
+[Genstrings](https://github.com/shahrukhalam/Genstrings)

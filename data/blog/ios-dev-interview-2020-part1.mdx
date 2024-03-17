@@ -1,0 +1,390 @@
+---
+title: 'IOS Interview Questions 2020 - Part 1'
+date: '2021-01-12'
+lastmod: '2021-02-01'
+tags: ['interview-question']
+draft: false
+summary: 'Questions, Tips and Tricks to clear iOS Interview Questions.'
+images: ['/static/images/canada/mountains.jpg', '/static/images/canada/toronto.jpg']
+authors: ['default']
+---
+<p class="intro">Questions, Tips and Tricks to clear iOS Interview Questions</p>
+
+![iOS Dev Interview Header](/images/articles/iOS/swift/008-ios-dev-interview-part1/header.webp)
+<p class="imageCredits">Photo from Unsplash</p>
+
+I hope the [interview series](/article/ios-dev-interview-2019-part1) I published before helped you a lot to understand the iOS developer interview process and brush up with a few interesting topics. Now for a change lets try to test our skills with the below Questions:
+
+📜 This article is for junior iOS developers
+
+
+### Q1. What output will be produced by the code below?
+
+```swift
+
+var crew = ["Captain": "Malcolm", "Doctor": "Simon"]  
+crew = [:]  
+print(crew.count)
+
+```
+<p class="note">Options</p>
+
+1. 0
+2. 1
+3. 2
+4. Nothing will be output
+5. This code will compile but crash
+6. This code will not compile
+
+
+### Q2. What output will be produced by the code below?
+
+```swift
+
+let number = 5  
+  
+switch number {  
+case 0..<5:  
+    print("First group")  
+case 5...10:  
+    print("Second group")  
+case 0...5:  
+    print("Third group")  
+default:  
+    print("Fourth group")  
+}
+
+```
+
+<p class="note">Options</p>
+
+1. First group
+2. Second group
+3. Third group
+4. Fourth group
+5. Nothing will be output
+6. This code will compile but crash
+
+### Q3. When this code is executed, what will the numbers constant contain?
+
+```swift
+
+let numbers = [1, 2, 3].map { [$0, $0] }
+
+```
+
+<p class="note">Options</p>
+
+1. [1, 1, 2, 2, 3, 3]
+2. [1, 2, 3]
+3. [[1, 1], [1, 2], [1, 3]]
+4. [[1, 1], [2, 1], [3, 1]]
+5. [[1, 1], [2, 2], [3, 3]]
+6. [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
+7. This code will compile but crash
+8. This code will not compile
+
+
+### Q4.  What output will be produced by the code below?
+
+```swift
+
+var spaceships = Set<String>()  
+spaceships.insert("Serenity")  
+spaceships.insert("Enterprise")  
+spaceships.insert("TARDIS")  
+spaceships.insert("Serenity")  
+
+print(spaceships.count)
+
+```
+
+<p class="note">Options</p>
+
+1. 0
+2. 1
+3. 3
+4. 4
+5. Nothing will be output
+6. This code will compile but crash
+7. This code will not compile
+
+### Q5. What output will be produced by the code below?
+
+```swift
+
+let rounded: Int = round(10.5)  
+print("Rounding 10.5 makes \(rounded)")
+
+```
+
+<p class="note">Options</p>
+
+1. Rounding 10.5 makes 10
+2. Rounding 10.5 makes 10.5
+3. Rounding 10.5 makes 11
+4. Nothing will be output
+5. This code will compile but crash
+6. This code will not compile
+
+
+### Q6. What output will be produced by the code below?
+
+```swift
+
+func greet(_ name: inout String) {  
+    name = name.uppercased()  
+    print("Greetings, \(name)!")  
+}
+
+var name = "Mal"  
+greet(name)  
+print("Goodbye, \(name)!")
+
+```
+
+<p class="note">Options</p>
+
+1. Greetings, MAL!  
+   Goodbye, MAL!
+2. Greetings, MAL!  
+   Goodbye, Mal!
+3. Greetings, Mal!  
+   Goodbye, MAL!
+4. Nothing will be output
+5. This code will compile but crash
+6. This code will not compile
+
+
+### Q7. What output will be produced by the code below?
+
+```swift
+
+let point = (556, 0)
+
+switch point {  
+case (let x, 0):  
+ print("X was \(x)")  
+case (0, let y):  
+ print("Y was \(y)")  
+case let (x, y):  
+ print("X was \(x) and Y was \(y)")  
+}
+
+```
+
+<p class="note">Options</p>
+
+1. X was 556
+2. X was 556 and Y was 0
+3. Y was 0
+4. Nothing will be output
+5. This code will compile but crash
+6. This code will not compile
+7. [Type an answer here]
+
+
+### Q8. Read the code below:
+
+```swift
+
+var foo: Float = 32  
+var bar: Double = 32
+
+```
+
+Assuming no typecasting, which of the following statements is true?
+
+<p class="note">Options</p>
+
+1. Either variable can be assigned to the other
+2. Neither variable can be assigned to the other
+3. You can assign "bar" to "foo"
+4. You can assign "foo" to "bar"
+5. This code will compile but crash
+6. This code will not compile
+
+
+### Q9. What output will be produced by the code below?
+
+```swift
+
+let people = [String](repeating: "Malkovitch", count: 2)  
+print(people)
+
+```
+
+<p class="note">Options</p>
+
+1. "Malkovitch" (a string)
+2. "Malkovitch", "Malkovitch" (two strings)
+3. ["Malkovitch", "Malkovitch"] (an array)
+4. ["Malkovitch"] (an array)
+5. Nothing will be output
+6. This code will compile but crash
+7. This code will not compile
+
+
+### Q10. When this code is executed, what value does the result contain?
+
+```swift
+
+func sum(numbers: Int...) -> Int {  
+    var result = 0  
+  
+    for number in numbers {  
+        result += number  
+    }  
+  
+    return result  
+}  
+
+let result = sum(numbers: [1, 2, 3, 4, 5])
+
+```
+
+<p class="note">Options</p>
+
+1. 0
+2. 1, 2, 3, 4, 5
+3. 15
+4. Nothing will be output
+5. This code will compile but crash
+6. This code will not compile
+
+
+### Q11. What output will be produced by the code below?
+
+```swift
+
+let crew = NSMutableDictionary()  
+crew.setValue("Kryten", forKey: "Mechanoid")  
+print(crew.count)
+
+```
+
+<p class="note">Options</p>
+
+1. 0
+2. 1
+3. nil
+4. Nothing will be output
+5. This code will compile but crash
+6. This code will not compile
+
+
+### Q12. What output will be produced by the code below?
+
+```swift
+
+enum MyError: Error {  
+    case broken  
+    case busted  
+    case badgered  
+}  
+  
+func willThrowAnError() {  
+    throw MyError.busted  
+}  
+  
+do {  
+    try willThrowAnError()  
+} catch MyError.busted {  
+    print("Code was busted!")  
+} catch {  
+    print("Code just didn't work")  
+}
+
+```
+
+<p class="note">Options</p>
+
+1. "Code just didn’t work"
+2. "Code was busted!"
+3. Nothing will be output
+4. This code will compile but crash
+5. This code will not compile
+
+
+### Q13. When this code is executed, what will the numbers constant contain?
+
+```swift
+
+let numbers = [1, 2, 3].flatMap { [$0, $0] }
+
+```
+
+<p class="note">Options</p>
+
+1. [1, 1, 2, 2, 3, 3]
+2. [1, 2, 3]
+3. [[1, 1], [1, 2], [1, 3]]
+4. [[1, 1], [2, 1], [3, 1]]
+5. [[1, 1], [2, 2], [3, 3]]
+6. [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
+7. This code will compile but crash
+8. This code will not compile
+
+
+### Q14. When this code is executed, what data type does converted number have?
+
+```swift
+
+let possibleNumber = "1701"  
+let convertedNumber = Int(possibleNumber)
+
+```
+
+<p class="note">Options</p>
+
+1. Int
+2. Int?
+3. String
+4. This code will not compile
+
+
+### Q15. What output will be produced by the code below?
+
+```swift
+
+let names = ["Pilot": "Wash", "Doctor": "Simon"]  
+let doctor = names["doctor"] ?? "Bones"  
+print(doctor)
+
+```
+
+<p class="note">Options</p>
+
+1. ""
+2. "Bones"
+3. "Doctor"
+4. "Simon"
+5. "Wash"
+6. nil
+4. Nothing will be output
+
+
+## Answers:
+1. (1) 0
+2. (2) Second group
+3. (5) [[1, 1], [2, 2], [3, 3]]
+4. (3) 3
+5. (6) This code will not compile
+6. (6) This code will not compile
+7. (1) X was 556
+8. (2) Neither variable can be assigned to the other
+9. (3) ["Malkovitch", "Malkovitch"] (an array)
+10. (7) This code will not compile
+11. (2) 1
+12. (5) This code will not compile
+13. (1) [1, 1, 2, 2, 3, 3]
+14. (2) Int?
+15. (2) "Bones"
+
+Thank you! will meet you in [part 2](/article/ios-dev-interview-2020-part2) with a different set of questions 🚀 
+
+## References:
+[Swift By Sundell](http://swiftbysundell.com)  
+[Hacking With Swift](https://www.hackingwithswift.com)  
+[Raywenderlich](http://raywenderlich.com)  
+[Swift Documentation by Apple](https://developer.apple.com/documentation/Swift)

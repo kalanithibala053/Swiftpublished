@@ -1,0 +1,346 @@
+---
+title: 'IOS Interview Questions 2020 - Part 2'
+date: '2021-01-12'
+lastmod: '2021-02-01'
+tags: ['interview-question']
+draft: false
+summary: 'Questions, Tips and Tricks to clear iOS Interview Questions.'
+images: ['/static/images/canada/mountains.jpg', '/static/images/canada/toronto.jpg']
+authors: ['default']
+---
+<p class="intro">Questions, Tips and Tricks to clear iOS Interview Questions</p>
+
+![iOS Dev Interview Header](/images/articles/iOS/swift/008-ios-dev-interview-part1/header.webp)
+<p class="imageCredits">Photo from Unsplash</p>
+
+If you did not have a chance to read the first part of this blog, please read [here](/article/ios-dev-interview-2020-part1)
+
+
+### Q1. What will be the output
+
+```swift
+
+func someFunction() -> String {  
+     defer { return "World" }
+     return "Hello"  
+}
+
+print(someFunction())
+
+```
+
+<p class="note">Options</p>
+
+1. "Hello"
+2. "World"
+3. "Hello World"
+4. Compiler error
+
+
+### Q2. What will be the output
+
+```swift
+
+var employeeSalary = 20
+
+func updateEmployeeSalary() {  
+   employeeSalary = 70
+   
+   defer { employeeSalary = 30 }  
+   defer { employeeSalary = 40 }  
+   defer { employeeSalary = 50 }
+   
+   employeeSalary = 50  
+}
+
+updateEmployeeSalary()
+print(employeeSalary)
+
+```
+
+<p class="note">Options</p>
+
+1. 20
+2. 50
+3. 30
+4. 70
+
+
+### Q3. Which of these is not a valid execution for the below code
+
+```swift
+
+var a: String = "a"  
+var b: String! = "b"  
+var c: String? = "c"
+a = c // 1  
+
+b = c // 2  
+c = b // 3
+
+```
+
+<p class="note">Options</p>
+
+1. 1
+2. Both 1, 2
+3. 3
+4. None of these
+
+
+### Q4. Let’s say we have 3 views of given Intrinsic size
+
+![Showing sizes of 3 different Views](/images/articles/iOS/swift/016-ios-dev-interview-part4/intrinsic-size.webp)
+
+In the below given horizontal StackView. Which of the following is true?
+
+![Showing sizes of 3 different Views in a StackView](/images/articles/iOS/swift/016-ios-dev-interview-part4/intrinsic-size-2.webp)
+
+<p class="note">Options</p>
+
+1. View 3 and View 2 has the least horizontal content hugging priority than view 1
+2. View 2 and View 3 has greater horizontal content hugging priority than view 1
+3. View 3 has the least horizontal content hugging priority
+4. View 1 has the highest horizontal content hugging priority
+
+
+### Q5. Let’s say we have 3 views of given Intrinsic size
+
+![Showing sizes of 3 different Views](/images/articles/iOS/swift/016-ios-dev-interview-part4/intrinsic-size-3.webp)
+
+arranged in a horizontal StackView, Which among the following represents Distribution set to fillProportionally .
+
+![Showing options for sizes of 3 different Views in a StackView](/images/articles/iOS/swift/016-ios-dev-interview-part4/intrinsic-size-4.webp)
+
+### Q6. What will be the output of the code snippet below:
+
+```swift
+
+class WhiteHouse { 
+    weak var pentagon: Pentagon?
+    
+    deinit {  
+        print("White House deinitialized")  
+    }  
+}
+
+class Pentagon {
+    weak var whiteHouse: WhiteHouse?
+     
+    deinit {  
+        print("Pentagon deinitialized")  
+    }  
+}
+
+var a = WhiteHouse()  
+a.pentagon = Pentagon()
+
+weak var b = Pentagon()  
+b?.whiteHouse = a
+
+```
+
+<p class="note">Options</p>
+
+1. Pentagon deinitialized, Pentagon deinitialized
+2. WhiteHouse deinitialized, Pentagon deinitialized
+3. Pentagon deinitialized, WhiteHouse deinitialized
+4. Nothing is deinitialized
+
+
+### Q7. What will be the output of the code snippet below:
+
+```swift
+
+class Kondana<T: Equatable> {
+    var dictDataHolder = [String: T]() 
+
+    func add(value: T?, using key: String) -> T? {  
+        self.dictDataHolder[key] = value
+        return value  
+    } 
+}
+
+var fortOne = Kondana<String>()  
+let value = fortOne.
+print(value)
+
+```
+
+<p class="note">Options</p>
+
+1. British
+2. nil
+3. compile-time error
+4. segmentation fault
+
+
+### Q8. What will be the output:
+
+```swift
+
+var motive = "Sip"
+let userMotive = { [motive] in  
+    print(motive)  
+}
+
+motive = "Lump Sum"
+print(userMotive())
+
+```
+
+### Q9. What will the output of the code snippet below be?
+
+```swift
+
+struct Person {  
+    var contact: Contact
+    
+    init(contact: Contact) {  
+        self.contact = contact  
+    }  
+}
+
+class Contact {  
+    var phoneNumber: Int
+    
+    init(phoneNumber: Int) {  
+        self.phoneNumber = phoneNumber  
+    }  
+}
+
+let contact = Contact(phoneNumber: 1800)  
+var vijay = Person(contact: contact)
+let ajith = vijay  
+vijay.contact.phoneNumber = 1234  
+
+print(ajith.contact.phoneNumber)  
+print(vijay.contact.phoneNumber)
+
+```
+
+### Q10. Choose the output of the Following Programme:
+
+```swift
+
+protocol SomeProtocol {  
+    func someFunction()  
+}
+
+extension SomeProtocol {  
+    func someOtherFunction() {  
+        print("SomeProtocol: Some Other Function")  
+    } 
+}
+
+struct SomeStruct: SomeProtocol {  
+    func someFunction() {  
+        print("Some Function")  
+    } 
+    
+    func someOtherFunction() {  
+        print("SomeStruct: Some Other Function")  
+    }  
+}
+
+let someStruct: SomeProtocol = SomeStruct()  
+print(someStruct.someFunction())  
+print(someStruct.someOtherFunction())
+
+```
+
+<p class="note">Options</p>
+
+1. "Some Function"  
+   "SomeStruct: Some Other Function"
+2. "Some Function"  
+   "SomeProtocol: Some Other Function"
+3. Compiler Error
+4. I am not Sure
+
+
+### Q11. Which of the following programme(s) will print the following:
+
+1 2 3 4 5 6 7 8 9 10 End of the World!
+
+```swift
+
+let firstQueue = DispatchQueue (label: "First Queue")
+let globalQueue = DispatchQueue.global()
+let parentQueue = DispatchQueue (label: "Parent Queue")
+
+```
+
+![ios-interview-intrinsic-size](/images/articles/iOS/swift/016-ios-dev-interview-part4/multithreading.webp)
+
+### Q12. What is the Type of `color`:
+
+```swift
+
+enum Color: String {  
+    case red  
+    case green  
+    case blue  
+}
+
+let color = Color(rawValue: "yellow")
+
+```
+
+<p class="note">Options</p>
+
+1. Color
+2. String
+3. Color?
+4. String?
+
+### Q13. Answer the following questions:
+
+![ios-interview-intrinsic-size](/images/articles/iOS/swift/016-ios-dev-interview-part4/auto-layouts.webp)
+
+1. What is the `center` of `outerView`  
+   (x: ?, y: ?)
+
+2. What is the `centre` of `innerView`    
+   (x: ?, y: ?)
+
+3. What are the `bounds` of `innerView`    
+   (x: ?, y: ?, width: ?, height: ?)
+
+4. What are the `bounds` of `outerView`  
+   (x: ?, y: ?, width: ?, height: ?)
+
+5. What is the `frame` of the `innerView`  
+   (x: ?, y: ?, width: ?, height: ?)
+
+### Q14. Spot the issue in this code if any?
+
+```swift
+
+final class SingleTon {
+    static let shared = SingleTon()  
+    private var viewControllers = [UIViewController]()
+    
+    private init() { }  
+      
+    func add(vc: UIViewController) {  
+        viewControllers.append(vc)  
+    } 
+    
+    func remove(vc: UIViewController) {  
+        if let index = viewControllers.firstIndex(of: vc) {  
+            viewControllers.remove(at: index)   
+        }  
+    }  
+}
+
+final class SomeViewController: UIViewController {  
+    init() {  
+        super.init(nibName: nil, bundle: nil)  
+        SingleTon.shared.add(vc: self)  
+    }  
+}
+
+```
+
+Answers are not provided intentionally 😜, to make you try and understand personally, you can add your answers/clarifications in the comment section.

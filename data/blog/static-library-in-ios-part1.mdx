@@ -1,0 +1,224 @@
+---
+title: Static Library in iOS
+date: '2020-11-11'
+tags: ['frameworks--libraries']
+draft: false
+summary: 'Are you Duplicating a piece of code for a particular functionality across multiple Apps? Do you find it difficult to fix a bug on all those places? If Yes, then Static Library is an answer to your problems.'
+---
+
+<p class="intro">
+Are you Duplicating a piece of code for a particular functionality across multiple Apps? Do you find it difficult to fix a bug on all those places? If Yes, then Static Library is an answer to your problems.
+</p>
+
+![Balancing Rock](/images/articles/iOS/framework/static/balancing-rock.png)
+<p class="imageCredits">Balancing Rock, Courtesy: <a href="https://www.instagram.com/tidecharmers">Tide Chambers</a></p>
+<p class="pullQuote">When the going gets tough, the Static Library gets going 🚀</p>
+
+## What are we going to Discuss
+- What is a Static Library
+- Why to use it
+- How to create one
+- What are the contents of a Static Library (.a)
+- How to use it in a Client App
+- How it works
+- When not to use it
+
+## What is a Static Library
+It’s nothing fancy, but a *collection* of *compiled* *source code files* to achieve a *particular functionality*.
+
+Let’s say we have **FileA.swift**, **FileB.swift** & **FileC.swift**, then we can compile them & wrap them together to form a Static Library which will have an extension of **[.a](https://stackoverflow.com/a/9810368/11787787)** (short for Archive).
+
+Simply put, it’s like:
+<img
+  alt="Static Library Packaging"
+  src="/images/articles/iOS/framework/static/packaging.png"
+  style={{ backgroundColor: 'rgba(230, 230, 230, 1.0)' }}
+/>
+<p className="imageCredits">Static Library Packaging</p>
+
+
+## Why to use it
+
+- **Code Reusability**: Suppose we have a common piece of functionality across multiple Apps, we can create a static library out of those common source codes & share across all our Apps instead of duplicating them.
+- **Code Abstraction**: We can hide the code which shouldn’t be known to the client App by marking Headers as Private or Internal.
+- **Code Encapsulation**: By distributing just the Static Library Binary (*will discuss on later part of this Article*), we can just share the functionalities & hide the implementation details from the clients.
+- **Ease of Use**: Clients shouldn’t worry about the nitty-gritty of the functionalities, They should get just the bare-minimum with the least effort.
+- **Maintainability**: When we have a central place for all our code, we can easily fix a bug & share it with the clients with just a version bump.
+- **Reduce App Compile Time**: By distributing just the Pre-Compiled Static Library Binary, we can reduce the compile time of the App compared to compiling all those source files needed for the piece of functionality.
+- **Reduce App Launch Time**: The way Static Libraries work (*will discuss on later parts of this Article*) compared to Dynamic Frameworks, we can minimise on ***[dylib loading time](https://useyourloaf.com/blog/slow-app-startup-times/)*** of ***[Pre-main time](https://useyourloaf.com/blog/slow-app-startup-times/)*** which helps in faster App Lauch.
+
+## How to create one
+
+We are going to create a Static Library called **Painter** which can paint a random color on a View passed by the Client App.
+
+### Responsibilities of Painter
+
+- Logic to generate a random color
+- Logic to paint it on a View passed by the Client App
+
+#### Step 1
+![Project Menu](/images/articles/iOS/framework/static/step-1.png)
+
+#### Step 2
+![Static Library Template](/images/articles/iOS/framework/static/step-2.png)
+
+#### Step 3
+![Create Project](/images/articles/iOS/framework/static/step-3.png)
+
+#### Step 4
+![Paint a View in Code](/images/articles/iOS/framework/static/step-4-1.png)
+![Generate random Color in Code](/images/articles/iOS/framework/static/step-4-2.png)
+
+#### Step 5
+Let’s Build for Simulator, we would see something like this on DerivedData Folder of Xcode.
+
+![DerivedData Build for Simulator](/images/articles/iOS/framework/static/step-5.png)
+
+#### Step 6
+Let’s Build for Generic iOS Device, we would see something like this on DerivedData Folder of Xcode.
+
+![DerivedData Build for Device](/images/articles/iOS/framework/static/step-6.png)
+
+## What are the contents of a Static Library
+
+As discussed earlier, Static Library is nothing but:
+
+<img
+  alt="Static Library Packaging Flow"
+  src="/images/articles/iOS/framework/static/packaging-flow.png"
+  style={{ backgroundColor: 'rgba(230, 230, 230, 1.0)' }}
+/>
+<p className="imageCredits">Static Library Packaging Flow</p>
+
+
+We can use **[ar](https://linux.die.net/man/1/ar)** tool to see the [Object Files](https://en.wikipedia.org/wiki/Object_file) inside the *libPainter.a*:
+
+![Contents of a Static Library](/images/articles/iOS/framework/static/contents.png)
+<p class="imageCredits">Contents of a Static Library</p>
+
+We can use **[nm](https://linux.die.net/man/1/nm)** tool to see the *Symbols* (eg: Types & Functions) declared inside the *libPainter.a*, notice the first one in *Painter.O* is for our only public function `paintRandomColor(onView view: UIView)`
+
+![Symbols contained in a Static Library](/images/articles/iOS/framework/static/symbols.png)
+<p class="imageCredits">Symbols contained in a Static Library</p>
+
+## How to use it in a Client App
+
+#### Step 7
+(in continuation to previous steps)
+![Project Menu](/images/articles/iOS/framework/static/step-7.png)
+
+#### Step 8
+![App Template](/images/articles/iOS/framework/static/step-8.png)
+
+#### Step 9
+![Create Project](/images/articles/iOS/framework/static/step-9.png)
+
+#### Step 10
+Let’s create a folder named *StaticLibrary* somewhere safe(say Desktop) & copy the `.swiftdoc` & `.swiftmodule` files from both the *Debug-iphonesimulator* & *Debug-iphoneos* folders of Painter Static Library.
+
+This folder will be needed to integrate the Static Library in the Client App.
+
+![Swift Module](/images/articles/iOS/framework/static/step-10-1.png)
+
+It should look something like this now:
+
+![Swift Module folder](/images/articles/iOS/framework/static/step-10-1.png)
+
+`.swiftdoc` & `.swiftmodule` files basically mimic the Objective-C Header for a Swift Module.
+
+#### Step 11
+Let’s create a Universal Binary or a Fat Binary which can work for both the iOS Simulator & iOS Device using **[lipo](https://ss64.com/osx/lipo.html)** tool using command:
+
+```bash
+
+lipo -create path_to_archive_for_simulator path_to_archive_for_device -output path_for_universal_binary
+
+```
+
+![Create Universal Binary using lipo in Terminal](/images/articles/iOS/framework/static/step-11-1.png)
+
+<p class="important">Important</p>
+
+**Universal Binary** = ***libPainter.a*** from *Debug-iphonesimulator* + ***libPainter.a*** from *Debug-iphoneos*
+
+
+Now our *StaticLibrary* folder should look something like this:
+
+![Copy Swiftmodule](/images/articles/iOS/framework/static/step-11-2.png)
+
+This folder is all that’s needed to integrate the Static Library in the Client App. Now we can distribute this folder to our Clients.
+
+#### Step 12
+Let’s Copy & Paste the *StaticLibrary* Folder from the previous step into the PainterClientApp root directory.
+
+![Copy StaticLibrary](/images/articles/iOS/framework/static/step-12.png)
+
+#### Step 13
+Let’s Add *libPainter.a* to Link Binary with Libraries of App Target Build Settings.
+
+    <iframe class="iframe" src="https://www.youtube.com/embed/jSh7qPXTCu0" frameborder="0" allow="picture-in-picture;" allowfullscreen>
+    </iframe>
+
+<p class="imageCredits">How to link Static library to the App</p>
+
+#### Step 14
+Let’s Set ***$(SRCROOT)/StaticLibrary*** as `LIBRARY SEARCH PATHS` & `IMPORT PATHS` of App Target Build Settings
+
+**LIBRARY SEARCH PATHS**
+
+A list of Folders(or Paths) which Xcode(rather [Linker](https://en.wikipedia.org/wiki/Linker_(computing))) will search for Library(.a) Files. You may already know about FRAMEWORK SEARCH PATHS, it’s similar to that, but for Libraries.
+
+**IMPORT PATHS**
+
+A list of Folders(or Paths) which Xcode(rather [Compiler](https://en.wikipedia.org/wiki/Compiler)) will search for additional Swift Modules. You may already know HEADER SEARCH PATHS, It’s similar to that, but for Swift Libraries.
+
+#### Step 15
+Let’s `import Painter` & use the `paintRandomColor` method from the Static Library in ViewController.
+
+![Using StaticLibrary](/images/articles/iOS/framework/static/step-15.png)
+
+#### Step 16
+Let’s Build & Run the App in both the Simulator & Device. We can see different random colors on every launch.
+
+    <iframe class="iframe" src="https://www.youtube.com/embed/N2ghy9hsi_E" frameborder="0" allow="picture-in-picture;" allowfullscreen>
+    </iframe>
+
+
+<p class="imageCredits">Demo of App using Static Library</p>
+
+#### Step 17
+Let’s check if Archive also works, if we would see the contents in the Archive by *Show Package Contents*, then *Products* -> *Applications* -> *Show Package Contents for* **PainterClientApp**, then we would find no sign of our **Painter** Static Library. That’s because it’s sitting right inside the App Binary. We will understand this in more detail in the next section.
+
+## How it works
+
+Let’s check for *Show Package Contents for* our **PainterClientApp** first.
+
+![Contents of App Package](/images/articles/iOS/framework/static/app-package.png)
+<p class="imageCredits">Contents of App Package</p>
+
+Even if we just linked *libPainter.a* to our App Target, it got copied into App Binary. That’s because of Static Linking of the Library.
+
+<img
+  alt="Static Library Linking"
+  src="/images/articles/iOS/framework/static/static-library-linking.png"
+  style={{ backgroundColor: 'rgba(230, 230, 230, 1.0)' }}
+/>
+<p className="imageCredits">Static Library Linking</p>
+
+
+So, now when System loads our App, it loads the Static Library Functionality as a single App Executable. Hence, the faster load/launch time.
+
+## When not to use it
+
+Static Libraries are great for code reusability and abstracting things. But, it has few demerits compared to it’s counterparts: Dynamic Libraries & Dynamic Frameworks.
+
+- **Higher App Size**: As Static Library Object Files are directly copied to the App Binary, app size is bloated. Dynamic Libraries are loosely linked to the App, whereas Static Libraries are hard linked to the app. For instance System Frameworks like UIKit are loaded when needed, App just keeps a reference to it, hence doesn’t add to the App Size which Users are going to download on their precious Network.
+- **Resources**: As Static Libraries are just a collection of Source Code, it can’t have Resources like Assets, Xibs, Storyboards & JSONs which are essential for many functionalities. Distributing Static Library along with a Resource Bundle solves this problem to a great extent, but Dynamic Frameworks really shine here.
+
+## Conclusion
+
+In this post we have learned how to leverage the use of Static Libraries to bundle up common functionalities across multiple Apps, how it will reduce duplicity & help maintainability. We have also put some light on the areas where Static Libraries don’t shine compared to Dynamic Libraries & Frameworks.
+
+Try to figure out the scenarios where you can make good use of them for a Cleaner, Sharable & Maintainable Approach.
+
+You could find the full code on Github: [PainterStaticLib](https://github.com/shahrukhalam/PainterStaticLib), [PainterClientApp](https://github.com/shahrukhalam/PainterClientApp)

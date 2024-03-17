@@ -1,0 +1,364 @@
+---
+title: Flavours of for loop in Swift
+date: '2020-12-21'
+tags: ['swift']
+draft: false
+summary: 'Let us deep dive understood the for-In, forEach, for-In-Enumerated in Swift and how it is different from other languages and why?'
+---
+<p class="intro">Let us deep dive understood the for-In, forEach, for-In-Enumerated in Swift and how it is different from other languages and why?</p>
+
+Swift provides us with multiple ways to loop through items in a collection. They are:
+
+```swift
+
+for language in languages {
+    print(language)  
+}
+
+languages.forEach { (language) in
+    print("Language", language)  
+}
+
+for (index, element) in languages.enumerated() {
+    print("Index:", index, "Language:", element)  
+}
+
+```
+
+## 1. for-In
+
+```swift
+
+for value in range {  
+    // statements  
+}
+
+```
+
+In many programming languages, the `for-in` loop is called **_forEach_**. Standard loop statement in other languages uses this format:
+
+```swift
+
+for(i = 0; i < n; i++) {    
+    // statements  
+}
+
+```
+
+
+
+## Important
+
+The c-style for-loops are no longer supported from Swift 3
+
+![C-style For loop error in Swift](/images/articles/iOS/swift/002-forIn-forEach-forInEnumerated/for-loop-error.webp)
+
+In Swift, the `for-in` syntax provides a concise and versatile way to iterate over ranges, sequences, iterators, collections, and even strings. Here's an example:
+
+```swift
+let languages = ["English", "Tamil", "German"]
+
+for i in 0..<languages.count {  
+    print("Language \(i + 1):", languages[i])  
+}
+```
+
+// Output:
+Language 1: English  
+Language 2: Tamil  
+Language 3: German
+
+```
+
+In Swift, object types like [arrays](https://docs.swift.org/swift-book/LanguageGuide/CollectionTypes.html), [dictionaries](https://docs.swift.org/swift-book/LanguageGuide/CollectionTypes.html) and [sets](https://docs.swift.org/swift-book/LanguageGuide/CollectionTypes.html) are known as _collections_. Any collection can be iterated with a for-in loop.
+
+for a dictionary, we can iterate like this:
+
+```swift
+
+let languagesDict = [  
+    "England":"English", "Germany":"German", "Mexico":"Spanish"  
+]
+
+for (country, language) in languagesDict {  
+    print("The \(country)'s Language is \(language)")  
+}
+
+// Output:
+The Germany's Language is German  
+The Mexico's Language is Spanish  
+The England's Language is English**
+
+```
+
+Swift also provides two range operators `lowerBound...upperBound` and `lowerBound..<upperBound` as shortcuts for expressing a range of values.
+
+```swift
+
+for i in 0...5 {  
+    print(i)  
+}
+
+// Output:  
+0  
+1  
+2  
+3  
+4  
+5
+
+for i in 0..<5 {  
+    print(i)  
+}
+
+// Output:  
+0  
+1  
+2  
+3  
+4
+
+```
+
+
+<p class="warning">Warning</p>
+
+If `lowerBound` is greater than `upperBound`, the code will crash
+
+
+If we want to reverse the range for looping, we can easily achieve that using:
+
+```swift
+
+for i in (0...5).reversed() {  
+    print(i)      
+}
+
+// Output:  
+5  
+4  
+3  
+2  
+1  
+0
+
+```
+
+## Stride
+
+As I mentioned above, C-Style for loops are not supported from swift 3, so how we can get the `increment of the counter variable` i.e. **i++**
+
+It can be achieved using `stride`, it helps us to move from one value to another using _any incremental value_ and we can also specify whether the upper bound is inclusive or exclusive.
+
+```swift
+
+for i in stride(from: 0, to: 10, by: 2) {  
+    print(i)  
+}
+
+// Output:  
+0  
+2  
+4  
+6  
+8
+
+```
+
+there is also another type of stride in swift:
+
+```swift
+
+for i in stride(from: 0, through: 10, by: 2) {  
+    print(i)  
+}
+
+// Output:  
+0  
+2  
+4  
+6  
+8  
+10
+
+```
+
+the basic difference is, `from-to` calculates the element before `to` but in `from-through` it takes the `through` element also into consideration. It's similar to `<` and `<=`
+
+```swift
+
+func stride<T>(from start: T, to end: T, by stride: T.Stride) -> StrideTo<T> where T: Strideable
+
+```
+
+<p class="imageCredits"><a href="https://developer.apple.com/documentation/swift/stride(from:to:by:)">Apple Docs</a></p>
+
+```swift
+
+func stride<T>(from start: T, through end: T, by stride: T.Stride) -> StrideThrough<T> where T: Strideable
+
+```
+
+<p class="imageCredits"><a href="https://developer.apple.com/documentation/swift/stride(from:through:by:)">Apple Docs</a></p>
+
+## 2. forEach
+
+```swift
+
+languages.forEach { (language) in
+    print("Language", language)  
+}
+
+// Output:  
+Language English  
+Language Tamil  
+Language German
+
+```
+
+Swift provides a dedicated method `forEach` for a specific usecase, unlike the above `forIn`, this method cant break the loop part way (at some point). It has to loop over each item in the sequence.
+
+This helps people reading your code to figure out your intent, that you want to act on all items and won’t stop in the middle.
+
+
+<p class="note">Note</p>
+
+- `break` ends the loop’s execution immediately and transfers control to the code after the loop’s closing brace (`}`). No further code from the current iteration of the loop is executed, and no further iterations of the loop are started.
+- `continue` statement tells a loop to stop what it’s doing and start again at the beginning of the next iteration through the loop. It says “I am done with the current loop iteration” without leaving the loop altogether.
+
+
+For example:
+
+```swift
+
+var evenNumbers = [Int]()
+
+for number in (0...100) {  
+    guard evenNumbers.count < 10 else {  
+        break  
+    }  
+  
+    guard number % 2 == 0 else {  
+        continue  
+    }
+
+    evenNumbers.append(number)  
+}
+
+print(evenNumbers)  
+  
+// Output: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+
+```
+
+same cannot be achieved in forEach with break and continue, so we need something like this:
+
+```swift
+
+let evenNumbers = (0...100)
+    .filter { number -> Bool in  
+        return number % 2 == 0  
+    }
+    .prefix(10)
+
+print(evenNumbers)  
+  
+// Output: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+
+```
+
+## 3. for-In-Enumerated
+
+```swift
+
+for (index, element) in languages.enumerated() {  
+    print("Index:", index, "Language:", element)  
+}
+
+// Output:  
+Index: 0 Language: English  
+Index: 1 Language: Tamil  
+Index: 2 Language: German
+
+```
+
+This swift loop iterates over each of the item by also telling the index of it. If we need to iterate over the elements and need their index also, then `for-in-enumerated` is the perfect loop for us.
+
+### Nested For Loops
+
+Also, we can use a `for` loop inside another `for` loop
+
+```swift
+
+var nationals = ["Brits", "Spain", "Italy"]  
+var languages = ["English", "Spanish", "Italian"]
+
+for i in 0 ..< nationals.count {  
+    var string = "\(nationals[i]) speaks"
+    for _ in 0 ..< languages.count {  
+        string += "\(languages[i])"  
+    }
+    
+    print(string)  
+}
+
+// Output:  
+Brits speaks English English English  
+Spain speaks Spanish Spanish Spanish  
+Italy speaks Italian Italian Italian
+
+```
+
+### While
+
+A `while` loop performs a set of statements until a condition becomes `false`.
+
+```swift
+
+while condition {  
+    // statements  
+}
+
+var index = 0  
+while index < languages.count {  
+    print(languages[index])  
+    index += 1  
+}
+
+// Output:  
+English  
+Tamil  
+German
+
+```
+
+### Repeat
+
+`Repeat while` loop is similar to `do while` loop in other languages.
+
+It is similar to the above `while` loop in Swift. But, the major difference is that, this loop evaluates the **condition after running** the statements (_at the end_).
+
+It’ll always run at least once
+
+```swift
+
+repeat {  
+    // statements  
+} while condition
+
+var index = 0  
+repeat {  
+    print(languages[index])  
+    index += 1  
+} while index < languages.count
+
+// Output:  
+English  
+Tamil  
+German
+
+```
+
+Both `while` and `repeat` are best used in loops where the number of steps are unknown.
+
+The entire playground can be found [here](https://github.com/MuralidharanKathiresan/ControlStatementsInSwift)

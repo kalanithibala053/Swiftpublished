@@ -1,0 +1,188 @@
+---
+title: 'Reduce and Optimise IOS app'
+date: 2021-08-07T15:32:14Z
+lastmod: '2021-02-01'
+tags: ['App-Performance & Optimization']
+draft: false
+summary: 'An overview of the new features released in v1 - code block copy, multiple authors, frontmatter layout and more'
+
+---
+<p class="intro">Ever wondered how your iOS app size is calculated. In this blog, we will see how I measured one of my apps and optimised its size.</p>
+
+## How we can check our app size
+
+### 1. From App Store
+
+![reduce-optimise](/images/articles/iOS/swift/014-reduce-and-optimise-iOS-app/app-store-preview.webp)
+<p class="imageCredits">(for an already published app, we can easily get app size using iPhone/iPad App Store)</p>
+
+### 2. From your iTunes Dashboard
+
+![reduce-optimise](/images/articles/iOS/swift/014-reduce-and-optimise-iOS-app/iTunes-dashboard.webp)
+<p class="imageCredits">(If the app is submitted and processed by Apple in AppStore Connect)</p>
+
+### 3. From Xcode
+With the help of **Xcode archive**, we can get an approximate size of the app before submitting to the App Store Connect
+
+[How to check approximate App store size of app in Xcode](https://stackoverflow.com/questions/29152093/how-to-check-approximate-app-store-size-of-app-in-xcode)
+
+<p class="note">Note</p>
+
+This is not the final size. It may be larger in the app store when the app is approved and published. That is because the .ipa file submitted to iTunes will be processed with  [DRM](https://apple.stackexchange.com/questions/42992/how-does-ios-app-drm-work-exactly)  by Apple. DRM encrypts the .ipa file to prevent app piracy & again recompressing the .ipa file.
+
+Apple’s DRM is known as  [FairPlay](https://en.wikipedia.org/wiki/FairPlay)
+
+
+## Why App Size is important?
+
+1. Users want to download the app in **Cellular Connection** (you cannot be sure all our users will be in  **WiFi**  while downloading/updating the app)
+2. Keeping the app size slimmer increases **user retention**.
+3. A lengthy ‘time to first play’ could **turn the user on edge & make them sigh before** even they experience your mobile app. And a user’s device may have an extremely **small amount of disk space**.
+4. When you can save user’s space and environment why not 😜
+
+## What is the AppStore limit for apps?
+
+1. From **iOS 13** there is warning alert for downloading app more than  **200**  **MB**  in cellular connection, that can be also customised to always allow or always warn when downloading in cellular connection.
+2. For devices running lower than **iOS 12,** it is mandatory for the user to be connected with  **WiFi**  to download apps more than **200 MB**
+3. The maximum size an iOS app can be submitted in AppStore is [4 GB](https://developer.apple.com/news/?id=02122015a)
+4. [Each Mach-O executable file](https://help.apple.com/app-store-connect/#/dev611e0a21f) (for example,  `app_name.app/app_name`) must not exceed these limits:
+
+- For apps whose `MinimumOSVersion` is less than 7.0: maximum of **80 MB** for the total of all `__TEXT` sections in the binary.
+- For apps whose `MinimumOSVersion` is 7.x through 8.x: maximum of **60 MB** per slice for the `__TEXT` section of each architecture slice in the binary.
+- For apps whose `MinimumOSVersion` is 9.0 or greater: maximum of **500 MB** for the total of all `__TEXT` sections in the binary.
+
+these checks can be done using this  [Viewing Virtual Memory Usage](https://developer.apple.com/library/archive/documentation/Performance/Conceptual/ManagingMemory/Articles/VMPages.html).
+
+## What are the factors that contribute to App Size?
+
+For example: Look at the Telegram app and see how much each file type contributes and what are they?
+
+![reduce-optimise](/images/articles/iOS/swift/014-reduce-and-optimise-iOS-app/telegram-binary.webp)
+
+The binaries (the main binary, frameworks, and extension binaries). Binaries usually make up 60%+ of an app’s download size. Then followed by assets like images, audio files, fonts, etc.,
+
+## How to reduce this size?
+
+### 1. Clean up unwanted/leftover app resources
+As the features within an app grow, there will be an increase in resources, class files. But we never revisit to clear the unused assets. The manual way for this:
+
+- Using Xcode, archive the app and in the organiser window, open the archive in finder
+- Open the folder and right-click on the app_name and select “Show Package Contents”
+- The package contains all your resources like images, xib’s, storyboard’s, fonts, etc.,
+- Find out all the resources that you do not require and delete them
+
+[LSUnusedResources](https://github.com/tinymind/LSUnusedResources) is a cool open-source tool that helps us to do this task easily.
+
+![reduce-optimise](/images/articles/iOS/swift/014-reduce-and-optimise-iOS-app/lsunused-resources.gif)
+<p class="imageCredits"><a href="https://github.com/tinymind/LSUnusedResources">LSUnusedResources</a></p>
+
+### 2. App Thinning
+
+There are three main aspects of App Thinning: _App Slicing, Bitcode, and On-Demand Resources_.
+
+#### App Slicing
+Before iOS 9, Apple used a universal binary that means same binary will be downloaded in all the devices. This unnecessarily included the assets needed for a particular device model.
+
+So to overcome this apple came with a technique called App Slicing, we can upload a single ipa to the apps store connect and apple will slice it to different IPA's according to the executable architecture and resources that are needed for the target device
+
+For example: iPhone XR will download only 3x images, which by default speedup the download and reduce the app size
+
+
+![reduce-optimise](/images/articles/iOS/swift/014-reduce-and-optimise-iOS-app/app-slicing.webp)
+
+This process is completely done by the Apps Store. We can use TestFlight and Xcode for testing this.
+
+For App Slicing on resources, you need to add the images in Assets.xcassets. Otherwise, it would be hard for the App Store to know which images are for which device.
+
+#### Bitcode
+Bitcode is an intermediate representation of a compiled program. Apps you upload to iTunes Connect that contain bitcode will be compiled and linked on the App Store.
+
+What's the need to enable bitcode in the app?
+
+Apple is continuously enhancing the optimization performed by the Clang compiler to further improve the performance of mobile applications and reduce its size.
+
+![enable-bitcode](/images/articles/iOS/swift/014-reduce-and-optimise-iOS-app/enable-bitcode.webp)
+
+Using the embedded bitcode, Apple itself can recompile applications using the latest, improved version of the compiler. This not only frees app developers from the burden of continuously having to update their development environment but also recompile & re-upload their applications to benefit from the latest improvements.
+
+The embedded bitcode enables Apple to recompile existing applications and make them compatible with the chipsets of new devices.
+
+<p class="note">Note</p>
+
+- Bitcode doesn’t leave Apple’s servers. Enabling it doesn’t have any security implications at all
+- Bitcode and App slicing are two different things, slicing will happen even bitcode is disabled
+
+
+#### On-Demand Resources
+ODR is a technique to reduce the **initial download size** of applications which rely on large assets for use. This is especially useful to **games developers** with large assets only required during certain stages of the game.
+
+![enable-bitcode](/images/articles/iOS/swift/014-reduce-and-optimise-iOS-app/on-demand-resources.webp)
+
+<p class="imageCredits">Smaller app with the tagged sets of resources hosted on the App Store, Courtesy: <a href="https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/On_Demand_Resources_Guide/index.html">Apple doc</a></p>
+
+**Benefits of On-Demand Resources:**
+- Smaller app size
+- Lazy loading of app resources
+- Remote storage of rarely used resources
+- Remote storage of in-app purchase resources
+
+ODR is a size reduction technique not an optimisation technique
+
+
+### 3. Keep an eye on the size of the app updates?
+
+Every time when we push an app update to the app store, the user will not be downloading the entire app again & again. Instead, Apple will create an update package and send it to the user via the app store.
+
+So, we need to make sure we did not push any unwanted changes in storyboards and xibs and frameworks etc.
+
+### 4. LLVM optimization levels
+
+LLVM provides 5 optimization levels (Apple Clang Code Generation) they are:
+
+#### None [-O0]
+- No attempt to optimize the code.
+- The goal is to reduce the cost of compilation
+- Makes debugging produce the expected results and statements are independent
+- Used during development when you are focused on debugging and need a fast compile time. **Not for shipping your executable.**
+
+#### Fast [-O, O1]
+- Does simple optimizations to Increase code performance while minimizing the impact to compile time.
+
+#### Faster [-O2]
+- Increases both compilation time and the performance of generated code.
+
+#### Fastest [-O3]
+- This option can increase the size of generated code as the compiler performs aggressive inlining of functions. (This option is generally not recommended.)
+
+#### Fastest, Smallest [-Os]
+- Performs all optimizations that **do not typically increase code size**.
+- **Suitable for shipping code** because it gives your executable a smaller memory footprint.
+
+#### Fastest, Aggressive optimization [-Ofast]
+- This setting enables Fastest but also enables aggressive optimizations that may break strict standards compliance but should work well on well-behaved code.
+
+![llvm](/images/articles/iOS/swift/014-reduce-and-optimise-iOS-app/llvm-optimization-levels.webp)
+
+When creating a new project in Xcode it sets up 2 configurations with following default values for the LLVM optimization levels:
+
+**Debug:**
+
+-O0 (none) - the fastest compile-time, the easiest debugging
+ 
+**Release:**
+
+-Os (fastest, smallest) - the best combination of small binary size and fast runtime execution
+
+Swift provides three different optimization levels (Swift Compiler Code Generation):
+- `-Onone`: Used while Development. Performs minimal optimizations and preserves all debug info.
+- `-O`: This is meant for most production code. The compiler performs aggressive optimizations that can drastically change the type and amount of emitted code. Debug information will be emitted but will be lossy.
+- `-Osize`: **This is a special optimization mode where the compiler prioritizes code size over performance.**
+
+![llvm-2](/images/articles/iOS/swift/014-reduce-and-optimise-iOS-app/llvm-optimization-levels-2.webp)
+
+Make sure you understand each of this setting and configure your project according to the requirement. The recommend for release version is `Fastest, Smallest [-Os]` and `-Osize`
+
+## Conclusion
+Please let me know in the comments if you have any other techniques to optimise the app size.
+
+I would like to thank my ex-colleague and friend [David Clements](https://medium.com/@davidclements_46985) to make me understand the importance of `customer first` in everything we design and develop.

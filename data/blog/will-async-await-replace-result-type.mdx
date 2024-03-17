@@ -1,0 +1,80 @@
+---
+title: Will async/await replace Result type?
+date: '2020-12-21'
+tags: ['swift']
+draft: false
+summary: 'It may not completely replace but soon you will have less usage of Result type in codebase.'
+---
+<p className="intro">It may not completely replace but soon you will have less usage of Result type in codebase</p>
+
+![Diagram explaining How async/await works in Swift](/images/articles/iOS/swift/async-await/async-await.png)
+<p className="imageCredits">How async/await works in Swift, Courtesy: <a href="https://developer.apple.com/videos/play/wwdc2021/10132/">Apple WWDC</a></p>
+
+Earlier we used to write 2 optional values in a closure, on the consumer side need to check which one has value and then process using if else condition.
+
+```swift
+
+func fetchContent(completion: ([Model]?, Error?) -> Void) {
+    // .. perform data request
+}
+
+```
+
+With Result type in place this boilerplate got reduced and we could elegantly handle success and failure. Still code looks messy when we have another pending request based on current api response. As the calls get nested and nested....., it can become a problem when it comes to readability. You can take action and move every "pyramid floor" into its own function, but that’s more of a patch. Till now we talked about callback based concurrency, let’s see how can we use Async/await api for concurrency which is supported from iOS 13.
+
+Async/await allows us to write asynchronous code just as we write regular code.
+
+## Async/await facts
+
+- **`async`** enables a function to suspend
+- **`await`** marks where an async function may suspend execution, other work can happen during a suspension
+- Once an awaited async call completes, execution resumes after the await.
+
+## When async/await is more useful?
+
+Let’s say you have a complex asynchronous block of code and on success or failure you have to call completion block. In that situation async/await can simplify code and there will be less chances of forgetting to call completion block.
+
+## How to incorporate async/await in existing closure codebase using Result Type?
+
+```swift
+
+func fetch<T: Codable>(request: APIData, basePath: String, completionHandler:@escaping ((Result<T, Error>) -> Void)) {  }
+
+```
+
+can become
+
+![Code example to incorporate async/await in existing closure codebase using Result Type](/images/articles/iOS/swift/async-await/support-async-await.png)
+
+Here we just wrapped existing closure in `withCheckedThrowingContinuation` to return T. There are multiples variants of `resume`
+
+Condition of using `Continuations` is **Continuation** must be resumed **exactly once** on every path.
+
+```swift
+
+public func resume<Er>(with result: Result<T, Er>) where E == Error, Er : Error
+
+public func resume(returning x: T)
+
+public func resume(throwing x: E)
+
+```
+
+If you just want to handle happy case then you can wrap closure in `withCheckedContinuation` as well.
+
+On consumer side we can have something like this:
+
+![Code example to incorporate async/await on consumer side](/images/articles/iOS/swift/async-await/usage-async-await.png)
+
+If we have nested dependent apis then also code will look simpler.
+
+Now let’s look into how to call this function from Controller/View Model
+
+![Code example to incorporate async/await from Controller/View Model](/images/articles/iOS/swift/async-await/call-site.png)
+
+A **Task** allows us to create a concurrent environment from a non-concurrent method, calling methods using async/await.
+
+Some useful articles if you wanna go into details:
+- [Async await in Swift explained with code examples](https://www.avanderlee.com/swift/async-await) by [avanderlee](https://www.avanderlee.com)
+- [Meet async/await in Swift](https://developer.apple.com/videos/play/wwdc2021/10132/) - WWDC 2021
+- [Modern Concurrency in Swift: Introduction](https://www.andyibanez.com/posts/modern-concurrency-in-swift-introduction/) by [andyibanez](https://www.andyibanez.com)

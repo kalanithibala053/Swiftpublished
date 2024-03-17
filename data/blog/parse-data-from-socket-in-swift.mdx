@@ -1,0 +1,221 @@
+---
+title: Parse data from socket in swift
+date: '2020-12-21'
+tags: ['swift']
+draft: false
+summary: 'Strings in Swift comes with handy default initializers to parse data.'
+---
+<p class="intro">When I was working in a trading app, there is a need to rely on a socket connection to get realtime data. So every time I get data from the socket, need to parse it and feed it into the view to display the data.</p>
+
+![header](/images/articles/iOS/swift/013-parse-data-from-socket-in-swift/header.webp)
+
+Language like JAVA comes with powerful  [ByteBuffer](https://docs.oracle.com/javase/7/docs/api/java/nio/ByteBuffer.html) to make life easier in this case. In iOS, we do not have an exact alternative but we do have options:
+
+#### 1. Strings in Swift comes with handy default initializers to parse data
+
+Example:
+
+```swift
+
+let unit8: [UInt8] = [67, 97, 102, 195, 169]  
+let strFromUInt8 = String(decoding: unit8, as: UTF8.self)
+
+print(strFromUInt8) // "Cafe\n"
+
+let data: Data = Data(unit8)  
+let stringFromData = String(data: data, encoding: .utf8)
+
+print(stringFromData) // "Optional("Cafe")\n"
+
+```
+
+<p class="important">Important</p>
+
+-  It’s never safe to force-unwrap a data-to-string transformation.
+-  Strings in Swift use Unicode internally, so encoding a string using a Unicode encoding will always succeed.
+
+
+So parsing strings from the socket is straight forward. But the same is possible for other types like Int, Double, etc.
+
+#### 2. Using Pointers
+
+How to get the data into a proper Swift type like an `Int` or `Float`? Swift’s type system is strict enough that you can’t force a typecast to an unrelated type. We can’t cast the bytes contained in a  `Data`  object to an  `Int`.
+
+There is no `Int` constructor that takes a `Data` or raw bytes (Strings in swift are lucky as seen in option 1 above 😜). The method `withUnsafeBytes(_:)` is the [method](https://developer.apple.com/documentation/swift/array/2635991-withunsafebytes) we need for all our data conversion needs.
+
+
+Calls the given closure with a pointer to the underlying bytes of the array’s contiguous storage.
+
+
+**Int:**
+
+```swift
+
+let unit8: [UInt8] = [136, 3]
+let integer = unit8.withUnsafeBytes {$0.load(as: UInt16.self)}
+print(integer) // "904\n"
+
+```
+
+**Double:**
+
+```swift
+
+let unit8: [UInt8] = [154, 153, 153, 153, 153, 130, 151, 64]
+let double = unit8.withUnsafeBytes {$0.load(as: Double.self)}
+print(double) // "1504.65\n"
+
+```
+
+This method `withUnsafeBytes` gets closure, and it passes a pointer into that closure. The type of the pointer is generic `UnsafePointer<T>`, and you define what the type of data the pointer contains. If you know you were sent a 32-bit integer, set your closure parameter as `UnsafePointer<Int32>`.
+
+So, when a data object is received like below:
+
+```swift
+
+let data: [UInt8] = [0,0,48,50,54,45,49,50,45,50,48,49,57,32,49,  
+                     57,58,48,53,58, 52,56,0,50,54,45,49,50,45,  
+                     50,48,49,57,32,49,57,58,48,53,58,52,57,0,50,  
+                     54,45,49,50,45,50,48,49,57,32,49,57,58,48,53,  
+                     58,52,57,0,78,82,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  
+                     0,0,0,0,0,]
+                     
+```
+
+this data may contain multiple elements(types) into it, to traverse into this array of UInt8 and get the type we need, we can add an extension to  `Array`
+
+```swift
+
+public extension Array {
+    func slice(_ from: Int, count: Int) ->  ArraySlice<Element>? {
+        guard (0 <= from && from < self.count) && (from < from+count && from+count < self.count) else {
+            return nil
+        }
+        return self[from...from+count-1]
+    }
+}
+
+```
+
+then we can extend the ArraySlice to parse the chunked array of elements from the parent array to our desired type
+
+```swift
+
+public extension ArraySlice {
+    private func array() -> [Element] {
+        return Array(self)
+    }
+
+    func withAlignedBytes<R>(_ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R {
+        if startIndex == 0 || startIndex % MemoryLayout<R>.alignment == 0 {
+            return try self.withUnsafeBytes(body)
+        } else {
+            return try self.array().withUnsafeBytes(body)
+        }
+    }
+}
+
+```
+
+now we can conclude with extending array with our desired type functions like below:
+
+```swift
+
+public extension Array where Array.Element == UInt8 {
+    func getString(atIndex: Int, count: Int) -> String? {
+        guard let bytes = self.slice(atIndex, count: count) else { return nil }
+        guard let string = String(bytes: bytes, encoding: .utf8)?.trim() else { return nil }
+        return string
+    }
+
+    func getInt(atIndex: Int, count: Int) -> Int? {
+        guard let bytes = self.slice(atIndex, count: count) else { return nil }
+        let int = bytes.withAlignedBytes {$0.load(as: UInt16.self)}
+        return Int(int)
+    }
+
+    func getDouble(atIndex: Int, count: Int) -> Double? {
+        guard let bytes = self.slice(atIndex, count: count) else { return nil }
+        let double = bytes.withAlignedBytes {$0.load(as: Double.self)}
+        return double
+    }
+
+    func getDecimal(atIndex: Int, count: Int) -> Decimal? {
+        guard let bytes = self.slice(atIndex, count: count) else { return nil }
+        let decimal = bytes.withAlignedBytes {$0.load(as: Decimal.self)}
+        return decimal
+    }
+}
+
+```
+
+now we can use the above code by:
+
+```swift
+
+let myString = data.getString(atIndex: 0, count: 6) 
+print(myString) // "MuraliK"
+
+```
+
+Ok, these look cool when we know the count of sub-array, if a situation comes when we don know the count, then we have to calculate the length by ourselves.
+
+![array-length](/images/articles/iOS/swift/013-parse-data-from-socket-in-swift/array-length.webp)
+
+```swift
+
+extension Array where Element == UInt8 {
+    func stringEndIndex(from startIndex: Int = 0) -> Int? {
+        findStringEndIndex(from: startIndex)
+    }
+
+    // Method to calculate the end index of string
+    private func findStringEndIndex(from startIndex: Int, to endIndex: Int? = nil) -> Int? {
+        guard (endIndex == .none) || (endIndex != nil && endIndex! <= startIndex && endIndex! < count) 
+        
+        else { return nil } // Not a valid string
+        guard startIndex < count else { return endIndex }
+
+        var arraySlice = self[0...startIndex]
+        guard !arraySlice.contains(where: { 0...31 ~= $0 }) else { return endIndex }
+        
+        if String(data: Data(arraySlice), encoding: .utf8) != nil {
+            return findStringEndIndex(from: startIndex + 1, to: startIndex)
+        }
+
+        guard startIndex + 1 < count else { return endIndex }
+        arraySlice = self[0 ... startIndex + 1]
+        
+        guard !arraySlice.contains(where: { 0...31 ~= $0 }) else { return endIndex }
+        
+        if String(data: Data(arraySlice), encoding: .utf8) != nil {
+            return findStringEndIndex(from: startIndex + 2, to: startIndex + 1)
+        }
+
+        guard startIndex + 3 < count else { return endIndex }
+        arraySlice = self[0 ... startIndex + 3]
+        
+        guard !arraySlice.contains(where: { 0...31 ~= $0 }) else { return endIndex }
+        
+        if String(data: Data(arraySlice), encoding: .utf8) != nil {
+            return findStringEndIndex(from: startIndex + 4, to: startIndex + 3)
+        }
+
+        return endIndex
+    }
+}
+
+```
+
+#### Using Decoder
+
+It is basically Swift’s internal `Decodable` + Creating custom containers for parsing `[UInt8]` to the respective Types specified in concrete Type of Decodable leveraging the power of Protocols.
+
+**BinaryDecodable**  protocol confirming to Swift’s  `Decodable`  protocol
+
+**BinaryDecoder**  class confirming to Swift’s  `Decoder`  protocol
+
+It mocks the `Container` behaviour, It specifies the way to decode any Type when called by Decoder internally for all the properties with an associated Type in the Struct.
+
+### Conclusion
+We tried to use all three ways to parse the socket data to understand which is more flexible and error-free. We found the method 2 using `withUnsafeBytes(_:)` is easy to read, maintain and available for all types.

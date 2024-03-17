@@ -1,0 +1,119 @@
+---
+title: Manage resources in Swifty way using SwiftGen
+date: '2020-12-21'
+tags: ['swift']
+draft: false
+summary: 'Many times it really pains to manage the assets and localization strings in the iOS projects, this blog is all about discussing a clean way of using them with the help of SwiftGen.'
+---
+Many times it really pains to manage the assets and localization strings in the iOS projects, this blog is all about discussing a clean way of using them with the help of  [SwiftGen](https://github.com/SwiftGen/SwiftGen).
+
+![Image showing things organized on a wall](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/header.webp)
+
+## What is SwiftGen?
+
+It's' a tool to auto-generate Swift code for resources of your projects, to make them type-safe to use.
+
+They are many ways to integrate them, as usual, the simple and safe way I prefer is using cocoapods. We can simply add  `pod 'SwiftGen'`  to our  `Podfile`
+
+![Podfile using SwiftGen](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/podfile.webp)
+
+if you are not familiar with cocoapods, I suggest you have a look [here](https://www.raywenderlich.com/626-cocoapods-tutorial-for-swift-getting-started)
+
+<p class="note">Note</p>
+
+_SwiftGen isn’t really a pod, as it’s not a library your code will depend on at runtime; so the installation via CocoaPods is just a trick that installs the SwiftGen binaries in the `Pods/` folder, but you won’t see any swift files in the `Pods/SwiftGen` group in your Xcode’s Pods.xcodeproj_
+
+_That’s normal: the SwiftGen binary is still present in that folder in the Finder_
+
+
+Add a new group called  `Resources`  and move the Assets.xcassets into the resources folder.
+
+![switgen-podfile](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/move-assets.gif)
+
+Move Assets.xcassets into the Resources folder
+
+Create a new file `Colors.json` to store all our colors and similarly for strings: `Localizable.strings` to store all our strings
+
+![switgen-colors](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/colors-json.gif)
+
+In the case of fonts, we have to maintain many font files, so it is good to create a group called Font and we can put the font file inside it.
+
+![switgen-fonts](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/fonts.gif)
+
+Now create a new file  `GenerateResource.sh`  and add the following code into it
+
+```bash
+
+#!/bin/sh
+
+RSROOT=$SRCROOT/CleanAssetsManagementDemo/Resources
+
+"$PODS_ROOT/SwiftGen/bin/swiftgen" \
+xcassets -t swift3 "$RSROOT/Assets.xcassets" \
+--output "$RSROOT/Assets.swift"
+
+"$PODS_ROOT/SwiftGen/bin/swiftgen" \
+strings -t structured-swift4 "$RSROOT/Localizable.strings" \
+--output "$RSROOT/L10n.swift"
+
+"$PODS_ROOT/SwiftGen/bin/swiftgen" \
+colors -t swift4 "$RSROOT/Colors.json" \
+--output "$RSROOT/Colors.swift"
+
+"$PODS_ROOT/SwiftGen/bin/swiftgen" \
+fonts -t swift4 "$RSROOT/Fonts" \
+--output "$RSROOT/Fonts.swift"
+
+```
+
+![switgen-generate-resources](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/generateResource.sh.gif)
+
+```bash
+
+"$PODS_ROOT/SwiftGen/bin/swiftgen" \
+xcassets -t swift4 "$RSROOT/Assets.xcassets" \
+--output "$RSROOT/Assets.swift"
+
+```
+
+is used to provide the input file, template and output file to generate the swift code for assets, the same has been repeated for strings, fonts and colours above.
+
+once this file is added, we need a create run script in Xcode.
+
+![switgen-adds-the-run-script](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/adds-the-run-script.gif)
+<p class="imageCredits">Add the run script</p>
+
+if you are not familiar with what is a run script and how it works, please a have a look here:  [Run a shell script](https://help.apple.com/xcode/mac/10.0/index.html?localePath=en.lproj#/devc8c930575)
+
+Once we added the run script, we need to add the input and output files in it, like below:
+
+![switgen-configure-swiftgen-run-script](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/configure-swiftgen-run-script.webp)
+
+Add few entries into the `Colors.json` and localizable.strings like below:
+
+![switgen-colors-json-2](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/colors-json-2.webp)
+<p class="imageCredits">Colors.json</p>
+
+![switgen-localizable-strings](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/localizable-strings.webp)
+<p class="imageCredits">Localizable.strings</p>
+
+
+After adding them, when you try to build the project, it will generate the output swift files like below:
+
+![switgen-projects-folder](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/projects-folder.webp)
+
+copy these files into the Xcode project navigator. And lets see how we can use these in code:
+
+![switgen-xcode-demo](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/xcode-demo.gif)
+
+
+![switgen-viewcontroller-demo](/images/articles/iOS/swift/011-manage-resources-using-swiftgen/viewcontroller-demo.webp)
+
+That’s IT, we are done. Now
+
+-  Avoid any typo you could have when using a String
+-  Free auto-completion
+-  Avoid the risk to use a non-existing asset name
+-  All this will be ensured by the compiler.
+
+Please add your queries and valuable suggestions about the article in comments suggestion. I would like to thank [Dominic Freeston](https://medium.com/@dominicfreeston) who is the one made me understand the importance of  clean  asset management in a project!

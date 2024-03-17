@@ -1,0 +1,175 @@
+---
+title: How to master Pull Request
+date: '2020-12-21'
+tags: ['git-and-github']
+draft: false
+summary: 'Tips to use while creating and reviewing a pull request'
+---
+<p class="intro">Tips to use while creating and reviewing a pull request</p>
+
+![Developers reviewing a pull request together](/images/articles/iOS/swift/006-how-to-create-a-good-pull-request/pull-request-reviewing.jpg)
+<p class="imageCredits">Photo by Parabol on Unsplash</p>
+
+The first thing I do at work every day 📈 is to review all open pull requests. Likewise, I try to open ✅ a pull request before I complete my day. Let us see why it is important and how to do a perfect one!
+
+## What is a [pull request](https://git-scm.com/docs/git-request-pull)?
+
+```bash
+
+git request-pull [-p] <start> <url> [<end>]
+
+```
+
+When you have changes `feature/bug-fix/anything` ready, you let the team or contributors know the changes via a pull request, so that they can review and respond to them.
+
+The name **Pull requests** came since you’re asking the project(collaborators) to **pull** changes from your branch(fork). In version control tools, They provide a simple, web-based way to submit your work (often called "patches") to a project.
+
+## Pull request vs Merge request
+
+Both the terms seem to be different/confusing, but they actually do the same exact thing.
+
+GitHub and Bitbucket choose the name “pull request” because the _first manual action is to pull the feature branch_.
+
+Tools such as GitLab and others choose the name “merge request” because the _final action is to merge the feature branch._
+
+## How to create a good pull request?
+
+### 1. Proper commit history
+
+Pull requests are derived from a set of commits, make sure each commit has a proper message and they all together tells a story about how the changes are brought. Commit message should talk about WHAT changed, and WHY.
+
+![Proper commit history showing sequence of commits](/images/articles/iOS/swift/006-how-to-create-a-good-pull-request/proper-commit-history.webp)
+
+### 2. Create Small PRs
+
+Plan when to create a PR at the start of development itself
+
+![Flow Diagram explaining Multiple PR process](/images/articles/iOS/swift/006-how-to-create-a-good-pull-request/create-small-prs.webp)
+
+and avoid creating massive PR with a lot of changes. A small PR is
+
+* easy to review and motivates to add feedback,
+* reduces the risk of introducing silent bugs
+
+![A tweet making fun of massive PRs](/images/articles/iOS/swift/006-how-to-create-a-good-pull-request/massive-pr-funny-tweet.webp)
+
+### 3. Provide proper information about the PR
+
+PR description is an address to the destination. One should be done proper idea before he starts the review.
+
+Follow or create a [PR template](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/creating-a-pull-request-template-for-your-repository) inside your team to create new PRs. So that everyone can use it to create PR with the proper context to help the reviewer. A good PR includes:
+
+* self-explanatory title
+* JIRA ticket ID, link if one
+* information about the change (body of the pr)
+* add a video or gif describing the changes
+* links to related pull requests
+* references to go through if needed
+
+![An example PR description created using default template](/images/articles/iOS/swift/006-how-to-create-a-good-pull-request/pr-description-with-default-template.webp)
+
+### 4. Add comments to your PR
+
+There might be a lot of thought processes, research and decisions involved during the development. So it's better to add **why** comments in your PR at proper areas while creating it.
+
+### 5. Rebase Main Before Creating a PR
+
+Back merge the latest Master or Main branch changes into your branch Before Creating a PR. This saves you from tests getting failed, new bugs, understanding of the latest changes respective to your PR.
+
+![An example of rebasing with source branch before creating a PR](/images/articles/iOS/swift/006-how-to-create-a-good-pull-request/rebase-main-before-creating-a-pr.webp)
+
+### 6. Thank you and Credits for Suggestions and Help
+
+I always mention people I paired with and whom I sought assistance for the implementation in the PR description as a token of appreciation.
+
+![A PR description showing Credits and details of Pairing](/images/articles/iOS/swift/006-how-to-create-a-good-pull-request/pr-description-credits.webp)
+
+## Respond to Reviews Quickly
+
+After a PR is created. Addressing the review comments frequently requires a little time. Fixing a typo, adding a missing test case, renaming a method. If you do that quickly, your peer would have to spend less time remembering what that PR was all about. Less time-to-merge means happier colleagues, which means more profit!
+
+## Factors to be considered while reviewing a PR
+
+Reviewing pull requests is hard. It’s really hard. Its the reviewer's responsibility to make sure that the code is correct and met quality metrics before it gets merged. And you’re expected to do that by looking at a diff and list of files changed.
+
+You have to understand what the pull request is trying to achieve, what approach is being taken, what’s going on, and how all these files fit together — enough that you could potentially suggest an improvement. You may have to be on the lookout for typos or style problems. That’s a lot of stuff a reviewer needs to do, especially in a large(feature) pull request. Let us see a few areas on which we can achieve all these in an easy path.
+
+### 1. Understand the context
+
+Have a clear idea on what’s the purpose of the PR, before the review, most of the time, it can be from the PR description, link to a JIRA ticket, a video/gif of the implementation.
+
+### 2. Don’t feel the pressure to approve
+
+Never approve a PR for the sake of getting it merged, or just to mark your presence. And if sometimes it's completely ok to disagree with the changes and withhold your approval. Make sure you communicate your thoughts and approach them collaboratively.
+
+### 3. Don’t be afraid to ask "why?"
+
+PR is the place meant for collaboration where it's completely okay to ask why? Never hesitate to ask for an explanation related to the changes. Get into a discussion if you feel to know more about the changes raised.
+
+### 4. Don’t be afraid to add pedantic comments
+
+A typo, removing unnecessary lines, an alternative name to functions, etc are also important even though they are not seen as value additions.
+
+### 5. Review as many PRs as you can
+
+Reviewing PRs is a win-win between team members, so it is important to review as many as you can. By reviewing a PR you gain more context about what is happening in the codebase, and the developer who submitted the PR has the benefit of having an extra pair of eyes view their work.
+
+### 6. Keep your own checklist for approval
+
+Many developers in a team has a handful of points while reviewing a PR, it includes:
+
+* are the tests cases covered and passed?
+* do the changes follow defined architecture?
+* can it be simplified to a better version?
+* is the code modular/clear and easily understandable?
+* do it follows SRP and other coding principles?
+
+I suggest creating a checklist depending on the team and project’s style. For example, in my iOS Project PRs, I check:
+
+* does the code introduce memory leaks?
+* are properties declared with the correct storage semantics? (e.g. weak, unowned)
+* each implementation has a correct access specifier (final, public, etc)
+* closures and delegate are marked as ‘weak’
+* make sure the view and view controller does not hold any business logic
+* do the changes follow project naming convention-style
+* does the layout renders properly in all iOS devices
+
+## Danger
+
+To automate most of the repetitive code review scenarios, the open-source community came with a great addition called [Danger](https://github.com/danger/danger), you can integrate Danger with your version control tool and automate them. You can use Danger to codify your team’s norms, leaving humans to think about harder problems.
+
+## PR reviewing Etiquette
+
+The process of reviewing PR become an essential part of software development. We should also keep a few important points related to the decent approach of it:
+
+### 1. Avoid being too serious
+
+At the end of the day, it’s just a PR, so don’t be so serious. You should keep in mind that every team member’s role is to add value to the project as a whole team and maintain the quality of the code we keep in the repository.
+
+### 2. Respect everyone's preference
+
+When it comes to giving PR feedback there is a fine line between subjectivity and objectivity. And as a software developer, you must be cognizant of where that line is.
+
+Just because you would do something in a certain way doesn’t necessarily mean that is how it should be done. Different people tend to have different opinions, and in some situations, there might not be a ‘right’ way to do something, and that’s ok.
+
+### 3. Never make the process personal
+
+The goal is to provide feedback on the code/design/approach, not the person. You should never confuse the two.
+
+### 4. Add constructive feedback
+
+Even if you’re reviewing code, remember there are humans behind it. Be careful about how you may trigger other people’s emotions, especially since you’re talking about their work.
+
+![A PR comment showing how not to comment while reviewing PR](/images/articles/iOS/swift/006-how-to-create-a-good-pull-request/destructive-pr-comment.webp)
+
+The above can be mentioned in a far better way like:
+
+![A PR comment showing how to comment constructively while reviewing PR](/images/articles/iOS/swift/006-how-to-create-a-good-pull-request/constructive-pr-feedback.webp)
+
+Hope the article helped you a bit. Thanks for reading.
+
+## Resources
+
+[bliki: PullRequest](https://martinfowler.com/bliki/PullRequest.html)
+
+[Optimal pull request size — Small Business Programming](https://smallbusinessprogramming.com/optimal-pull-request-size/)
